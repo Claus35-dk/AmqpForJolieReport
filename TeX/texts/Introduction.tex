@@ -1,6 +1,23 @@
 \section{Introduction}
 Something about something.
 \subsection{Problem}
+\subsubsection{Problem statement}
+Service-oriented computing is a paradigm for developing distributed systems, by composing services that communicate using standardized protocols. This makes it extremely decoupled. Jolie is an interpreted service-oriented language.\\
+Advanced Message Queue Protocol (AMQP) is a wire-level message-oriented protocol. The protocol not only describes the communication of the protocol, but also describes types down to the bytes to be transferred across the network. This is what makes it wire-level and its implementers are able to transfer objects of different types.\\
+The AMQP protocol is becoming more and more widely used. AMQP is used by companies such as Microsoft, VMWare, RedHat and Cisco. Jolie does not support this protocol, which limits its users from using AMQP services.\\
+The main focus of our project will be to implement a plugin for Jolie to extend Jolie with support for the message-oriented protocol AMQP.
+\subsubsection{Method}
+We will study the AMQP standard and other implementations of the protocol. We will study how other protocols are implemented with Jolie, and we will implement AMQP for Jolie.\\
+Our implementation of AMQP will enable the use of the protocol for regular Jolie method calls on services (request-response). We will also look into how to best implement continually enqueue and consume messages without enquement being blocking for the publisher (publish-subscribe).\\
+\\\textbf{Milestones}
+\begin{enumerate}
+\item Implement the AMQP type system in accordance with the Jolie type system. 
+\item Implement the symmetric asynchronous protocol for transfer of messages between processes. 
+\item Implement the standard, extensible message format defined in the AMQP specification. 
+\end{enumerate}
+
+We will refer to the Jolie source code repository for test cases and use cases. 
+If time allows it, we will implement monitoring of different services’ interaction between each other by using the SPY-project (\url{http://mrg.doc.ic.ac.uk/publications/spy-local-verification-of-global-protocols/}). The SPY-project is about monitoring the correctness of protocol executions in AMQP by a distributed system.
 \newpage
 \begin{comment}
 \begin{figure}[H]
