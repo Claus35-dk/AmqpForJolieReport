@@ -13,6 +13,9 @@ TestResults
 *.user
 *.sln.docstates
 
+# OS files
+Thumbs.db
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
