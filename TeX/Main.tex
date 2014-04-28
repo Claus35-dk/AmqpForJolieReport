@@ -13,6 +13,7 @@
 \usepackage{url} % Used for URLs.
 \usepackage{fancyhdr}
 \usepackage{natbib} % For BibTeX.
+\usepackage{lastpage} % For finding total number of pages.
 
 % Commands.
 \newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}} % Custom command used for tables.
@@ -25,6 +26,7 @@
 \pagestyle{fancy}
 
 \begin{document}
+\cfoot{\thepage\ of \pageref{LastPage} }
 \maketitle
 \tableofcontents
 \newpage
