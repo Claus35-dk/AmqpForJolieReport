@@ -8,10 +8,11 @@
 \usepackage{framed}
 \usepackage{comment} % Comment multiple lines.
 \usepackage{spverbatim} % Pasting large amounts of texts such as SQL code.
+\usepackage[utf8]{inputenc} % Use UTF 8. This allows æ, ø, å.
 \usepackage{alltt}
 \usepackage{float}
 \usepackage{url} % Used for URLs.
-\usepackage{fancyhdr}
+\usepackage{fancyhdr} % For header and footer.
 \usepackage{natbib} % For BibTeX.
 \usepackage{lastpage} % For finding total number of pages.
 
@@ -22,12 +23,21 @@
 
 % Author and title for the frontpage.
 \title{AMQP for Jolie}
-\author{Bachelor project by\\Michael S\o by Andersen \& Claus Lindquist Henriksen\\IT University of Copenhagen}
+\author{Bachelor project by\\Michael Søby Andersen \& Claus Lindquist Henriksen\\msoa@itu.dk, clih@itu.dk\\IT University of Copenhagen}
 \pagestyle{fancy}
 
 \begin{document}
-\cfoot{\thepage\ of \pageref{LastPage} }
+% Save section name in \markright. Used in header.
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+% Header.
+\lhead{\textbf{\rightmark}\\AMQP for Jolie by Michael \& Claus}
+\rhead{IT Univeristy of Copehagen\\\today}
+% Footer.
+\cfoot{\thepage\ of \pageref{LastPage}}
+% Frontpage.
 \maketitle
+\newpage
+\input{texts/Preface.tex}
 \tableofcontents
 \newpage
 
