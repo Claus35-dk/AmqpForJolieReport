@@ -16,8 +16,9 @@ Our implementation of AMQP will enable the use of the protocol for regular Jolie
 \item Implement the standard, extensible message format defined in the AMQP specification. 
 \end{enumerate}
 
-We will refer to the Jolie source code repository for test cases and use cases. 
-If time allows it, we will implement monitoring of different services’ interaction between each other by using the SPY-project (\url{http://mrg.doc.ic.ac.uk/publications/spy-local-verification-of-global-protocols/}). The SPY-project is about monitoring the correctness of protocol executions in AMQP by a distributed system.
+We will refer to the Jolie source code repository for test cases and use cases.
+\section{Challenges}
+Concurrency - Jolie may use the same channel for multiple requests, data formats, Jolie has a contract with developers to keep behavior and deployment separated, RPC,
 \newpage
 \begin{comment}
 \begin{figure}[H]
