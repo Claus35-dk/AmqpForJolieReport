@@ -10,7 +10,6 @@ Jolie supports a growing number of protocols and Jolie promise to keep behavior 
 Message queues are being more and more used in event-based and message-oriented software architectures. They are also ideal for handling large amounts of data because you can simply queue something for processing and handle the flow of data as quickly as you can. AMQP\footnote{\url{http://www.amqp.org}} is an open standard application layer protocol for message-oriented middleware.\\
 AMQP's defining features include message orientation, queuing, routing, security and reliability.
 \subsubsection{Queues and Exchanges explained}
-A message handler is called a \textit{Consumer}. A consumer consumes messages by subscribing to a single queue.\\
 A \textit{Publisher} publishes messages to an \textit{Exchange}.\\
 An exchange is defined with an exchange type (routing algorithm). AMQP 0.9.1 describes support for four types\footnote{\url{https://www.rabbitmq.com/amqp-0-9-1-reference.html}}:
 \begin{itemize}
@@ -19,7 +18,8 @@ An exchange is defined with an exchange type (routing algorithm). AMQP 0.9.1 des
 \item Topic
 \item Headers/Match
 \end{itemize}
-A \textit{Queue} may bind to one or more exchanges and thereby receive messages to hold. A queue may bind with a routing key to only receive messages with matching routing criteria.
+A \textit{Queue} may bind to one or more exchanges and thereby receive messages to hold. A queue may bind with a routing key to only receive messages with matching routing criteria.\\
+A message handler is called a \textit{Consumer}. A consumer consumes messages by subscribing to a single queue.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{illustrations/publisher-exchange-queue-consumer.png}
   \caption{AMQP message path\footnote{\url{https://www.rabbitmq.com/tutorials/amqp-concepts.html}}}
