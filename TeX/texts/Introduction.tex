@@ -11,24 +11,12 @@ We will study the AMQP standard and other implementations of the protocol. We wi
 Our implementation of AMQP will enable the use of the protocol for regular Jolie method calls on services (request-response). We will also look into how to best implement continually enqueue and consume messages without enquement being blocking for the publisher (publish-subscribe).\\
 \\\textbf{Milestones}
 \begin{enumerate}
-\item Implement the AMQP type system in accordance with the Jolie type system. 
-\item Implement the symmetric asynchronous protocol for transfer of messages between processes. 
-\item Implement the standard, extensible message format defined in the AMQP specification. 
+\item Implement the AMQP type system in accordance with the Jolie type system.
+\item Implement the symmetric asynchronous protocol for transfer of messages between processes.
+\item Implement the standard, extensible message format defined in the AMQP specification.
 \end{enumerate}
 
 We will refer to the Jolie source code repository for test cases and use cases.
 \section{Challenges}
 Concurrency - Jolie may use the same channel for multiple requests, data formats, Jolie has a contract with developers to keep behavior and deployment separated, RPC,
 \newpage
-\begin{comment}
-\begin{figure}[H]
-  \includegraphics[width=\textwidth]{illustrations/UseCase_ver1.png}
-  \caption{Usecase version 1.1}
-  \label{dailyscrum}
-\end{figure}
-\begin{figure}[H]
-  \includegraphics[width=\textwidth]{illustrations/UseCase_ver2.png}
-  \caption{Usecase version 2.0}
-  \label{burndown}
-\end{figure}
-\end{comment}
