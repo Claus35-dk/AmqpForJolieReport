@@ -6,9 +6,25 @@ Jolie has a number of interfaces for its extensions and protocols to implement. 
 \#\# Describe the manifest and other ways to register the extension.
 \subsection{Data formats}
 We looked at multiple "AMQP clients" for Java and frameworks building upon these clients. The Advanced Message Queue protocol is, as its name suggest, not simple so we thought it smartest to reuse existing software and then writing our own layer between the reused client and Jolie. The most promising, most used and most updated seemed to be the basic AMQP client build by RabbitMQ\footnote{\url{https://www.rabbitmq.com/clients.html}}. RabbitMQ's server and client is widely used by a number of large companies and is also sold as part of a VMWare software package\footnote{\url{http://www.vmware.com/products/vfabric-rabbitmq}}. The client is freely available from RabbitMQ's website.\\
-The RabbitMQ client handles a lot of the AMQP stuff such as establishing connections and channels. The client also provides methods for publishing and subscribing. The publish method takes the body of the message as a byte-array. We have chosen to use this publish-method to send messages. That means converting everything we send to byte-arrays and thereby we do not use the AMQP described data types. ## Extend this somehow.
+The RabbitMQ client handles a lot of the AMQP stuff such as establishing connections and channels. The client also provides methods for publishing and subscribing. The publish method takes the body of the message as a byte-array. We have chosen to use this publish-method to send messages. That means converting everything we send to byte-arrays and thereby we do not use the AMQP described data types. \#\# Extend this somehow.
 \subsection{One-way}
-Our first milestone is to publish a message to our message queue server from Jolie.
+Our first milestone is to publish a message to our message queue server from Jolie. To connect to an AMQP combliant message queue server one must specify:
+\begin{itemize}
+\item Server address/IP
+\item Network port
+\item User name
+\item Password
+\item Virtual host name
+\item Exchange name (required for publishing only)
+\item Queue name (required for subscribing only)
+\item Routing key (optional)
+\end{itemize}
+We took the decision to have Virtual Host, Exchange and Queue written in the location URL as URL-style arguments. Jolie has a method for extracting the location specified in the Jolie program. We then wrote a method for extracting the URL-style arguments in the URL:\\
+\url{amqp://username:password@servername:port/vhost?queue=queuename&exchange=exchangename&routingkey=routingkey}\\
+\subsubsection{AmqpCommChannel}
+\subsubsection{AmqpListener}
+\subsubsection{First publish}
+Step-by-step method invocation description.
 \subsection{Request-response}
 \subsection{Concurrency}
 \newpage
