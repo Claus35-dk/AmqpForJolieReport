@@ -1,11 +1,13 @@
 \section{AMQP for Jolie}
-In this chapter we will describe our implementation of the extension Advanced Message Queue Protocol for Jolie and we will argue for the design choices we have chosen. We use a RabbitMQ\footnote{\url{www.rabbitmq.com}} server as our message queue and exchange server.
+In this chapter we will describe our implementation of the extension Advanced Message Queue Protocol for Jolie and we will argue for the design choices we have chosen. We use a RabbitMQ\cite{RabbitMQ} server as our message queue and exchange server.
 \subsubsection{Jolie integration}
 We are writing an extension to Jolie, and for it to be use full, it will have to work as an integration and work seamlessly with Jolie.\\
-Jolie has a number of interfaces for its extensions and protocols to implement. After implementation, the extension is then registered in a manifest-file.\\
+Jolie has a number of interfaces for its extensions and protocols to implement. After implementation, the extension is then registered in a manifest-file.
+
 \#\# Describe the manifest and other ways to register the extension.
 \subsection{Data formats}
-We looked at multiple "AMQP clients" for Java and frameworks building upon these clients. The Advanced Message Queue protocol is, as its name suggest, not simple so we thought it smartest to reuse existing software and then writing our own layer between the reused client and Jolie. The most promising, most used and most updated seemed to be the basic AMQP client build by RabbitMQ\footnote{\url{https://www.rabbitmq.com/clients.html}}. RabbitMQ's server and client is widely used by a number of large companies and is also sold as part of a VMWare software package\footnote{\url{http://www.vmware.com/products/vfabric-rabbitmq}}. The client is freely available from RabbitMQ's website.\\
+We looked at multiple "AMQP clients" for Java and frameworks building upon these clients. The Advanced Message Queue protocol is, as its name suggest, not simple so we thought it smartest to reuse existing software and then writing our own layer between the reused client and Jolie. The most promising, most used and most updated seemed to be the basic AMQP client build by RabbitMQ\cite{RabbitMqClient}. RabbitMQ's server and client is widely used by a number of large companies and is also sold as part of a VMWare software package\cite{vFabric}. The client is freely available from RabbitMQ's website.
+
 The RabbitMQ client handles a lot of the AMQP stuff such as establishing connections and channels. The client also provides methods for publishing and subscribing. The publish method takes the body of the message as a byte-array. We have chosen to use this publish-method to send messages. That means converting everything we send to byte-arrays and thereby we do not use the AMQP described data types. \#\# Extend this somehow.
 \subsection{One-way}
 Our first milestone is to publish a message to our message queue server from Jolie. To connect to an AMQP combliant message queue server one must specify:
