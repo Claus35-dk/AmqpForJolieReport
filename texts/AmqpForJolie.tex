@@ -22,7 +22,7 @@ Our first milestone is to publish a message to our message queue server from Jol
 \item Routing key (optional)
 \end{itemize}
 We took the decision to have Virtual Host, Exchange and Queue written in the location URL as URL-style arguments. Jolie has a method for extracting the location specified in the Jolie program. We then wrote a method for extracting the URL-style arguments in the URL:\\
-\url{amqp://username:password@servername:port/vhost?queue=queuename&exchange=exchangename&routingkey=routingkey}\\
+\url{amqp://username:password@servername:port/vhost?queue=queuename&exchange=exchangename&routingkey=routingkey}
 \subsubsection{AmqpCommChannel}
 \subsubsection{AmqpListener}
 \subsubsection{First publish}
