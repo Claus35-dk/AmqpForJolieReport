@@ -10,7 +10,7 @@ We looked at multiple "AMQP clients" for Java and frameworks building upon these
 
 The RabbitMQ client handles a lot of the AMQP stuff such as establishing connections and channels. The client also provides methods for publishing and subscribing. The publish method takes the body of the message as a byte-array. We have chosen to use this publish-method to send messages. That means converting everything we send to byte-arrays and thereby we do not use the AMQP described data types. \#\# Extend this somehow.
 \subsection{One-way}
-Our first milestone is to publish a message to our message queue server from Jolie. To connect to an AMQP combliant message queue server one must specify:
+Our first milestone is to publish a message to our message queue server from Jolie. To connect to an AMQP compliant message queue server one must specify:
 \begin{itemize}
 \item Server address/IP
 \item Network port
@@ -24,6 +24,7 @@ Our first milestone is to publish a message to our message queue server from Jol
 We took the decision to have Virtual Host, Exchange and Queue written in the location URL as URL-style arguments. Jolie has a method for extracting the location specified in the Jolie program. We then wrote a method for extracting the URL-style arguments in the URL:\\
 \url{amqp://username:password@servername:port/vhost?queue=queuename&exchange=exchangename&routingkey=routingkey}
 \subsubsection{AmqpCommChannel}
+
 \subsubsection{AmqpListener}
 \subsubsection{First publish}
 Step-by-step method invocation description.
