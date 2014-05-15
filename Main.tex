@@ -15,10 +15,19 @@
 \usepackage{fancyhdr} % For header and footer.
 \usepackage{natbib} % For BibTeX.
 \usepackage{lastpage} % For finding total number of pages.
+\usepackage{titlesec} % For cancelling out spacing after headers
+\usepackage{parskip}
 
 % Commands.
 \newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}} % Custom command used for tables.
 \newcommand{\specialcell}[1]{\begin{tabular}{@{}c@{}#1\end{tabular}}}
+
+% Page setup
+\setlength{\parskip}{4mm} % Set spacing between paragraphs
+\setlength{\parindent}{7mm} % Set indent for paragraphs
+\titlespacing*{\section}{0pt}{\parskip}{-\parskip} % Cancel out spacing after headers due to parskip. Star removes indentation of first paragraph.
+\titlespacing*{\subsection}{0pt}{\parskip}{-\parskip} % Same as above
+\titlespacing*{\subsubsection}{0pt}{\parskip}{-\parskip} % Same as above
 
 % Author and title for the frontpage.
 \title{AMQP for Jolie}
