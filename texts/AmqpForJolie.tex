@@ -8,15 +8,49 @@ Jolie has a number of interfaces for its extensions and protocols to implement. 
 
 To be able to integrate AMQP with Jolie we need to understand how jolie sends a request, and how the response is handled.
 
-When jolie tries to invoke a method on a service, it starts out by creating an instance of the relevant CommChannel. To create this instance Jolie will use a factory that is a subtype of CommChannelFactory. In our case we would need to create two classes called AmqpCommChannel and AmqpCommChannelFactory. The createChannel
+When jolie tries to invoke a method on a service, it starts out by creating an instance of the relevant CommChannel. To create this instance Jolie will use a factory that is a subtype of CommChannelFactory. In our case we would need to create two classes called AmqpCommChannel and AmqpCommChannelFactory. The CommChannelFactory class defines one method that must be overridden in subclasses; createChannel. This method is responsible for creating an instance of a subclass of the CommChannel class.
+
+A CommChannel subclass is responsible for sending and receiving CommMessage objects. CommChannel defines the following methods that must be overridden:
+\begin{itemize}
+  \item{recvResponseFor}
+  \item{recvImpl}
+  \item{sendImpl}
+  \item{closeImpl}
+\end{itemize}
+
+As we are not interested in implementing the recvResponseFor method, we implement another subclass of the CommChannel, the StreamingCommChannel (this implements AbstractCommChannel, which in turn implements CommChannel).
+
+The sendImpl method is called whenever the jolie-code is trying to send a message to another service. It receives the CommMessage object to send. It is the CommChannels responsibility to make sure that the protocol selected from the jolie-code is used. The sendImpl should call the relevant protocols send method. This encodes the CommMessage object into an output stream. This output stream should then be sent to the service, and our subclass (AmqpCommChannel) should handle this for AMQP.
+
+When something is sent with success the recvImpl method is called. It is important to note, that this method is called regardless of the type of service call. Even if the called method is of the OneWay type, recvImpl is still called, but with an empty return message. Again, it is the CommChannels responsibility to make sure that the protocol is used, and the recvImpl should call the relevant protocols recv method. This converts the input stream from the response into a CommMessage object.
+
+When the jolie-program terminates the connections must be closed. The closeImpl method is called in this case, and our subclass must handle closing the AMQP connections.
+
+To setup Jolie to listen for requests from other services, it used the CommListener object. To support handling requests from a type of location, one needs to create a subclass of the CommListener. Like the CommChannel, a factory class is also used. The CommListenerFactory which needs to be derrived. In our case we would have to create the classes called AmqpCommListener and AmqpCommListenerFactory. When jolie starts a program that has an input port with an amqp location it invokes the createListener method of the factory for creating a listener.
+
+The abstract class CommListener specifies the following methods that must be overridden:
+\begin{itemize}
+  \item{run}
+  \item{shutdown}
+\end{itemize}
+
+The CommListener class implements the Java Thread class (actually, it implements JolieThread which in turn implements Thread), and when jolie starts the thread the run method is called. This method should use whatever blocking call the location has for accepting a connection, and handle it using another thread to be able to immediately be ready for another connection.
+
+The shutdown method is used when the listener is closed, and should handle closing connections.
+
 \subsection{Data formats}
 We looked at multiple "AMQP clients" for Java and frameworks building upon these clients. The Advanced Message Queue protocol is, as its name suggest, not simple so we thought it smartest to reuse existing software and then writing our own layer between the reused client and Jolie. The most promising, most used and most updated seemed to be the basic AMQP client build by RabbitMQ\cite{RabbitMqClient}. RabbitMQ's server and client is widely used by a number of large companies and is also sold as part of a VMWare software package\cite{vFabric}. The client is freely available from RabbitMQ's website.
 
-The RabbitMQ client handles a lot of the AMQP stuff such as establishing connections and channels. The client also provides methods for publishing and subscribing. The publish method takes the body of the message as a byte-array. We have chosen to use this publish-method to send messages. That means converting everything we send to byte-arrays and thereby we do not use the AMQP described data types. \#\# Extend this somehow.
-\subsection{One-way}
-Our first milestone is to publish a message to our message queue server from Jolie. To connect to an AMQP compliant message queue server one must specify:
+The RabbitMQ client handles a lot of the AMQP stuff such as establishing connections and channels. The client also provides methods for publishing and subscribing. The publish method takes the body of the message as a byte-array. We have chosen to use this publish-method to send messages. That means converting everything we send to byte-arrays and thereby we do not use the AMQP described data types.
+
+When everything is handled as byte arrays, we do not need to worry about the types of the AMQP specification. To fully support communication with other AMQP services, we would need to implement the type-system of AMQP, but we chose to skip this part, to be able to focus on other, more important aspects of the implementation.
+
+\subsection{OneWay}
+The first part of our implementation is about publishing messages to an exchange on our AMQP server. This meant implementing the OneWay type for methods on services. This section will describe our implementation of the OneWay method type.
+
+To be able to publish messages to an exchange (which in turn routes it to a queue) one must specify the following information:
 \begin{itemize}
-\item Server address/IP
+\item Server hostname/IP address
 \item Network port
 \item User name
 \item Password
@@ -25,15 +59,118 @@ Our first milestone is to publish a message to our message queue server from Jol
 \item Queue name (required for subscribing only)
 \item Routing key (optional)
 \end{itemize}
-We took the decision to have Virtual Host, Exchange and Queue written in the location URL as URL-style arguments. Jolie has a method for extracting the location specified in the Jolie program. We then wrote a method for extracting the URL-style arguments in the URL:\\
-\url{amqp://username:password@servername:port/vhost?queue=queuename&exchange=exchangename&routingkey=routingkey}
 
-To be able to publish a message to a queue, we need to implement one of the methods of our subclass of CommChannel, the AmqpCommChannel.
-\subsubsection{AmqpCommChannel}
+We initially wanted to be able to specify all the parameters in the port definitions like this:
 
-\subsubsection{AmqpListener}
-\subsubsection{First publish}
-Step-by-step method invocation description.
-\subsection{Request-response}
+\begin{lstlisting}
+  outputPort someOutputPort {
+    Location: ``amqp://amqpServer:port/vhost''
+    Interfaces: SomeOutputInterface
+    Protocol: sodep
+    Username: user
+    Password: pass
+    Exchange: exch
+    RoutingKey: rtKey
+  }
+  inputPort someInputPort {
+    Location: ``amqp://amqpServer:port/vhost''
+    Interfaces: SomeInputInterface
+    Protocol: sodep
+    Username: user
+    Password: pass
+    Queue: queue
+    RoutingKey: rtKey
+  }
+\end{lstlisting}
+However, this required that we changed core Jolie code. We did not want to have to change Jolie to be able to implement our extension. Our extension should be able to be copied to peoples Jolie installations, and work out-of-the-box. This meant that we ended up implementing the transfer of all the parameters using the location url:
+
+\begin{lstlisting}
+  outputPort SomeOutputPort {
+    Location: ``amqp://user:pass@amqpServer:port/vhost?exchange=exch&routingkey=rtkey''
+    Interfaces: SomeOutputInterface
+    Protocol: sodep
+  }
+  inputPort SomeInputPort {
+    Location: ``amqp://user:pass@amqpServer:port/vhost?queue=queue&routingkey=rtkey''
+    Interfaces: SomeInputInterface
+    Protocol: sodep
+  }
+\end{lstlisting}
+Jolie has a method for extracting the query-part of an url, and we ended up writing a method for splitting the arguments into a map, for easier access.
+
+According to the Jolie language, we need to implement the AmqpCommChannel and AmqpCommChannelFactory classes.
+\subsubsection{AmqpCommChannel \& AmqpCommChannelFactory}
+The following methods needs to be partially implemented to be able to publish to an exchange:
+
+\noindent\textbf{AmqpCommChannel}\\
+The constructor for our initial implementation was responsible for establishing a connection to the location specified on the port, and save it on the object instance. We establish a connection this way:
+\begin{lstlisting}
+  // Connect to the AMQP server.
+  String schemeAndPath = location.toString().split(``\\?'')[0];
+  ConnectionFactory factory = new ConnectionFactory();
+  factory.setUri(schemeAndPath);
+  conn = factory.newConnection();
+
+  // Create the channel.
+  chan = conn.createChannel();
+\end{lstlisting}
+When publishing, subscribing or otherwise interacting with the server, the chan (com.rabbitmq.client.Channel) object is used.
+
+\noindent\textbf{sendImpl}\\
+When implementing the sendImpl method, we faced many difficulties. We took an incremental approach where we took small steps towards the final solution. To begin with, we implemented sending a simple cvalue that we hardcoded to the RabbitMQ server. In the web-based administrative interface of the RabbitMQ server, we could see the messages on a specific queue, and could therefore verify that our message reached the queue we intended. Our first implementation ended up looking something like this:
+\begin{lstlisting}
+  chan.basicPublish(exchName, routingKey, null, ``hey''.getBytes())
+\end{lstlisting}
+
+When we got that working we tried to use the protocol defined. This meant adding the following lines:
+\begin{lstlisting}
+  // Make protocol give us the bytes to send.
+  ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+  protocol().send(ostream, message, null);
+\end{lstlisting}
+And sending the byte array from the output stream.
+
+To begin with we used the jolie protocol called SODEP (Simple Operation Data Exchange Protocol)\cite{SODEP}, but we did not like the messages that created. The use-case we wished to test using the AMQP implementation was for a service to send file events to an exchange. To support this we needed to send simple values instead of the SODEP object containing much more meta data. To support this we ended up copying the SODEP implementation to create the SVDEP (Simple Value Data Exchange Protocol) protocol.
+See \ref{subsec:SVDEP} on page \pageref{subsec:SVDEP} for the explaination of SVDEP protocol. To fully support the capabilities of AMQP, one would have to implement the AMQP type system in the SVDEP protocol (and possibly rename the procotol).
+
+\noindent\textbf{recvImpl}\\
+Because we are implementing the OneWay type, recvImpl is not interesting. We did however face some difficulties, as Jolie invokes the method regardless of whether or not there is a response to handle. To test our implementation we started out having Java print a line to the console, to indicate that the method has been called.
+
+\noindent\textbf{closeImpl}\\
+The implementation of closeImpl should just close the connection we have established in the constructor.
+
+The factory class just creates an instance of the AmqpCommChannel class and returns it.
+
+One thing is being able to publish to an exchange, to fully implement OneWay we have to be able to subscribe to a queue as well, when acting as the other end. This means implementing the AmqpCommListener and its factory class AmqpCommListenerFactory
+
+\subsubsection{AmqpCommListener \& AmqpCommListenerFactory}
+The following methods need to be partially implemented to be able to subscribe to a queue:
+
+\noindent\textbf{AmqpCommListener}\\
+The constructor is responsible for creating a connection to the AMQP server, and for subscribing to the queue.
+
+We started out trying to implement a blocking call for use in the run method, but the AMQP client does not have such a method. Instead, it has the option to setup an instance of the Consumer object for handling when an item from a queue has been sent to us. This object has one method that needs to be implemented; handleDelivery. Fortunately, RabbitMQs client library has created a default consumer that we can create an anonymous class of. The handleDelivery method is given the body of the message, along with some properties.
+
+To start with, we just printed the message we received from the AMQP server. Later we changed the implementation to create an instance of the AmqpCommChannel class, and use it for handling the delivery. Jolie has a method for handling a receive using a CommChannel that we used.
+
+Jolie will call the recvImpl method of the CommChannel, and we had to modify this to be able to handle receiving a message. The recvImpl method does not take any arguments, so we need to save the data to process on the CommChannel object. We implemented the use of the protocol specified like this:
+\begin{lstlisting}
+  ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+  return protocol().recv(new ByteArrayInputStream(dataToProcess.body), ostream);
+\end{lstlisting}
+
+\noindent\textbf{run}\\
+As the library creates a new thread for handling a delivery, the run method does not need to do anything. The entire run method just consists of an infinite loop with a call to .wait() on an object. This should mean that this thread does nothing, and consumes no resources.
+
+\noindent\textbf{shutdown}\\
+Implementing shutdown just meant closing our connection to the AMQP server.
+
+We tested everything every step of the way, and found out that our implementation (as expected) did only work for OneWay service-calls. We needed to support using RequestResponse calls as well to respect the Jolie guarantees. This meant looking into RPC calls using AMQP. AMQP is not supposed to be used as an RPC-style protocol, but with a bit of ingenuity it is possible.
+
+\subsection{RequestResponse}
+
+
+\subsection{SVDEP protocol}
+\label{subsec:SVDEP}
 \subsection{Concurrency}
 \newpage

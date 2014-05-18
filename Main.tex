@@ -17,6 +17,8 @@
 \usepackage{lastpage} % For finding total number of pages.
 \usepackage{titlesec} % For cancelling out spacing after headers
 \usepackage{parskip}
+\usepackage{listings} % For code blocks with syntax higlighting
+\usepackage{hyperref} % For automatic links between parts of document and cites.
 
 % Commands.
 \newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}} % Custom command used for tables.
@@ -28,6 +30,9 @@
 \titlespacing*{\section}{0pt}{\parskip}{-\parskip} % Cancel out spacing after headers due to parskip. Star removes indentation of first paragraph.
 \titlespacing*{\subsection}{0pt}{\parskip}{-\parskip} % Same as above
 \titlespacing*{\subsubsection}{0pt}{\parskip}{-\parskip} % Same as above
+
+% Listings setup
+\lstset{breaklines=true}
 
 % Author and title for the frontpage.
 \title{AMQP for Jolie}
