@@ -4,7 +4,13 @@ In this chapter we will describe our implementation of the extension Advanced Me
 We are writing an extension to Jolie, and for it to be use full, it will have to work as an integration and work seamlessly with Jolie.\\
 Jolie has a number of interfaces for its extensions and protocols to implement. After implementation, the extension is then registered in a manifest-file.
 
-\#\# Describe the manifest and other ways to register the extension.
+The manifest files for CommChannel and CommListener extensions for Jolie needs to have the following two lines:
+\begin{lstlisting}
+  X-JOLIE-ChannelExtension: amqp:jolie.net.AmqpCommChannelFactory
+  X-JOLIE-ListenerExtension: amqp:jolie.net.AmqpListenerFactory
+\end{lstlisting}
+The first line defines that for output ports that has a location starting with `amqp://' Jolie should use the `jolie.net.AmqpCommChannelFactory' class.
+The second line defines that for input ports that has a location starting with `amqp://' Jolie should use the `jolie.net.AmqpListenerFactory' class.
 
 To be able to integrate AMQP with Jolie we need to understand how jolie sends a request, and how the response is handled.
 
