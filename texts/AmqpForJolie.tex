@@ -168,10 +168,44 @@ Implementing shutdown just meant closing our connection to the AMQP server.
 We tested everything every step of the way, and found out that our implementation (as expected) did only work for OneWay service-calls. We needed to support using RequestResponse calls as well to respect the Jolie guarantees. This meant looking into RPC calls using AMQP. AMQP is not supposed to be used as an RPC-style protocol, but with a bit of ingenuity it is possible.
 
 \subsection{RequestResponse}
-The second part of our implementation was focused on getting RPC-style calls working for the AMQP implementation. This meant modifying the 
+The second part of our implementation was focused on getting RPC-style calls working for the AMQP implementation. This meant modifying the AmqpCommChannel class we created ealier. For understanding how RPC works in AMQP, see \ref{subsubsec:AMQPRPC} on page \pageref{subsubsec:AMQPRPC}
+
+The RabbitMQ AMQP client library has support for RPC style communication through the RpcClient and RpcServer classes. RpcServer requires that you create a subclass, and does not work with how we have setup our Jolie extension. We ended up not using the RpcServer class, just the RpcClient.
+
+To allow for RPC calls we have to modify the following methods:
+
+\noindent\textbf{sendImpl}\\
+First of all, handling RPC is different that regular OneWay, so we needed a way of determining whether or not the call we are currently handling is of the RequestResponse type. Jolie has the ability to give us the definition of the method through its interface definition. Throught this we can determine the type.
+
+If we are handling an RPC call we first create a new instance of the RpcClient class. It needs the AMQP Channel, the exchange to publish to, and the routing key. Because we wish for RPC calls to publish directly to queues, we set the exchange to be blank, and the routing key to be the name of the queue.
+
+After creating this instance, we use the primitiveCall method to make a call to another method on the other side. This just gets the bytes to send to the queue.
+
+The entire RPC client implementation ended up looking like this:
+\begin{lstlisting}
+  RpcClient rpc = new RpcClient(chan, ``'', queueName);
+  dataToProcess = new AmqpMessage(null, rpc.primitiveCall(ostream.toByteArray(), null);
+\end{lstlisting}
+
+\noindent\textbf{recvImpl}\\
+When we are at the other end, and needs to send back a response, we use the replyTo property of the properties that follows the message. We simply publish our response to that queue.
+
 
 \subsection{SVDEP protocol}
 \label{subsec:SVDEP} % For referencing this part elsewhere
+The SVDEP protocol is used for when we wish to only transfer a value, and no metadata for it. This protocol could be extended to convert from the AMQP type system to the Jolie type system and vice versa. For now, we use it to be able to publish simple messages to an exchange, and for getting simple values from a queue.
+
+We have basically just copied the SODEP implementation, change the method writeMessage to only add the actual value to the stream, and remove the now unused methods.
 
 \subsection{Concurrency problems and solutions}
+When implementing both OneWay and RequestResponse, we experienced some periodic problems that ended up being concurrency problems. This section will explain some of them, and their solutions.
+
+\noindent\textbf{OneWay receiving and creating the CommChannel object}\\
+At first, because we did not want to create several connections and channels to a single AMQP location we did not create a new object for each message we received from our subscription. Instead, we created one instance of the AmqpCommChannel object and saved that in our AmqpListener instance. This resulted in concurrency problems, as all the threads used the same instance, and race conditions occurred.
+
+We spent a lot of time thinking about how to fix this, and ended up creating a handler class for AMQP connections. This class acts like a singleton having one connection for each location. The connections are stored by their location, and when you need a connection you give it the location. If there is no such connection, the handler will create it, and open a channel.
+
+By using this new connection handler, the creation of AmqpCommChannel will be instant, and not be dependant on network. Whenever we need to do something with the server (publish, subscribe, RPC primitiveCall) we would use the handler to get the connection.
+
+\#\# If there are no others, change intro to this section
 \newpage
