@@ -168,9 +168,10 @@ Implementing shutdown just meant closing our connection to the AMQP server.
 We tested everything every step of the way, and found out that our implementation (as expected) did only work for OneWay service-calls. We needed to support using RequestResponse calls as well to respect the Jolie guarantees. This meant looking into RPC calls using AMQP. AMQP is not supposed to be used as an RPC-style protocol, but with a bit of ingenuity it is possible.
 
 \subsection{RequestResponse}
-
+The second part of our implementation was focused on getting RPC-style calls working for the AMQP implementation. This meant modifying the 
 
 \subsection{SVDEP protocol}
-\label{subsec:SVDEP}
-\subsection{Concurrency}
+\label{subsec:SVDEP} % For referencing this part elsewhere
+
+\subsection{Concurrency problems and solutions}
 \newpage
