@@ -5,6 +5,10 @@ We are writing an extension to Jolie, and for it to be use full, it will have to
 Jolie has a number of interfaces for its extensions and protocols to implement. After implementation, the extension is then registered in a manifest-file.
 
 \#\# Describe the manifest and other ways to register the extension.
+
+To be able to integrate AMQP with Jolie we need to understand how jolie sends a request, and how the response is handled.
+
+When jolie tries to invoke a method on a service, it starts out by creating an instance of the relevant CommChannel. To create this instance Jolie will use a factory that is a subtype of CommChannelFactory. In our case we would need to create two classes called AmqpCommChannel and AmqpCommChannelFactory. The createChannel
 \subsection{Data formats}
 We looked at multiple "AMQP clients" for Java and frameworks building upon these clients. The Advanced Message Queue protocol is, as its name suggest, not simple so we thought it smartest to reuse existing software and then writing our own layer between the reused client and Jolie. The most promising, most used and most updated seemed to be the basic AMQP client build by RabbitMQ\cite{RabbitMqClient}. RabbitMQ's server and client is widely used by a number of large companies and is also sold as part of a VMWare software package\cite{vFabric}. The client is freely available from RabbitMQ's website.
 
@@ -23,6 +27,8 @@ Our first milestone is to publish a message to our message queue server from Jol
 \end{itemize}
 We took the decision to have Virtual Host, Exchange and Queue written in the location URL as URL-style arguments. Jolie has a method for extracting the location specified in the Jolie program. We then wrote a method for extracting the URL-style arguments in the URL:\\
 \url{amqp://username:password@servername:port/vhost?queue=queuename&exchange=exchangename&routingkey=routingkey}
+
+To be able to publish a message to a queue, we need to implement one of the methods of our subclass of CommChannel, the AmqpCommChannel.
 \subsubsection{AmqpCommChannel}
 
 \subsubsection{AmqpListener}
