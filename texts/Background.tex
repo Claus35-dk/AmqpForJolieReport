@@ -28,5 +28,20 @@ A message handler is called a \textit{Consumer}. A consumer consumes messages by
 \end{figure}
 
 \subsubsection{RPC in AMQP}
+AMQP is not built for executing calls that are not asynchronous. Every call is by design asynchronous. Furthermore, AMQP does not define communication peer-to-peer, instead it has a server in the middle that handles communication. RPC-like functionality can be acheived with a little creativity. How this is done is explained in this section.
+
+Because AMQP is not peer-to-peer we do not specify the other end that handles the call, but the AMQP servers queue for the RPC server. Therefore, the RPC server must create a queue for receiving calls, if there it not one already.
+
+When a client wishes to perform an RPC call it will publish a message directly to the RPC servers queue with some extra properties set. The client will then wait for a response, but AMQP does, by design, not support responding to a message, and we therefore need another way of transferring the response back to the client. This is where the creativity comes in.
+
+When a client performs an RPC call it will create a queue to receive the response on. The message published to the RPC server will have the property called \lq replyTo\rq set to the name of the queue that the response should be published to.
+
+However, creating a new queue for every call is obviously not very efficient, so AMQP supports another property that can be set on the request. This property is called \lq correlationId\rq. It contains a unique ID that is used to match responses with requests. This way we can create a single response queue for each client.
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{illustrations/amqp-rpc.png}
+  \caption{AMQP RPC model\cite{AMQPRPC}}
+\end{figure}
+
 \label{subsubsec:AMQPRPC}
 \newpage
