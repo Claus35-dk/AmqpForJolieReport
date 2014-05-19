@@ -20,6 +20,7 @@ We will refer to the Jolie source code repository for test cases and use cases.
 \subsection{Challenges}
 Doing this project, we expect to encounter some challenges which we will now describe.
 \subsubsection{Jolie integration}
+\label{subsubsec:Jolie integration}
 We are writing an extension to Jolie, and for it to be useful, it will have to work as an integration and work seamlessly with Jolie.\\
 Jolie makes a promise of separation between behavior and deployment. One should be able to change deployment specific things such as the transportation protocol without have to change anything else in the code. This is something our extension will also have to respect and this will probably prove to be a challenge.\\
 Jolie has a number of interfaces for its extensions and protocols to implement. After implementation, the extension is then registered in a manifest-file. Jolie will use the extension by invoking the methods described in the interface. Jolie does not only expect the extension to comply with the interface, but also a certain behavior. A challenge will be to observe which methods are invoked when, what Jolie itself will handle and what does Jolie expect the extension to handle, and when should the extension hold connections and entities for future use and when can they be discarded.

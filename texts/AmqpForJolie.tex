@@ -45,11 +45,12 @@ The CommListener class implements the Java Thread class (actually, it implements
 The shutdown method is used when the listener is closed, and should handle closing connections.
 
 \subsection{Data formats}
+\label{subsec:Data formats}
 We looked at multiple "AMQP clients" for Java and frameworks building upon these clients. The Advanced Message Queue protocol is, as its name suggest, not simple so we thought it smartest to reuse existing software and then writing our own layer between the reused client and Jolie. The most promising, most used and most updated seemed to be the basic AMQP client build by RabbitMQ\cite{RabbitMqClient}. RabbitMQ's server and client is widely used by a number of large companies and is also sold as part of a VMWare software package\cite{vFabric}. The client is freely available from RabbitMQ's website.
 
 The RabbitMQ client handles a lot of the AMQP stuff such as establishing connections and channels. The client also provides methods for publishing and subscribing. The publish method takes the body of the message as a byte-array. We have chosen to use this publish-method to send messages. That means converting everything we send to byte-arrays and thereby we do not use the AMQP described data types.
 
-When everything is handled as byte arrays, we do not need to worry about the types of the AMQP specification. To fully support communication with other AMQP services, we would need to implement the type-system of AMQP, but we chose to skip this part, to be able to focus on other, more important aspects of the implementation.
+When everything is handled as byte arrays, we do not yet need to worry about the types of the AMQP specification. To fully support communication with other AMQP services, we would need to implement the type-system of AMQP, but we chose to skip this part, to be able to focus on other, more important aspects of the implementation.
 
 For more about the AMQP Type System, see the protocol specification\cite{AmqpTypes}.
 
