@@ -51,6 +51,8 @@ The RabbitMQ client handles a lot of the AMQP stuff such as establishing connect
 
 When everything is handled as byte arrays, we do not need to worry about the types of the AMQP specification. To fully support communication with other AMQP services, we would need to implement the type-system of AMQP, but we chose to skip this part, to be able to focus on other, more important aspects of the implementation.
 
+For more about the AMQP Type System, see the protocol specification\cite{AmqpTypes}.
+
 \subsection{OneWay}
 The first part of our implementation is about publishing messages to an exchange on our AMQP server. This meant implementing the OneWay type for methods on services. This section will describe our implementation of the OneWay method type.
 
