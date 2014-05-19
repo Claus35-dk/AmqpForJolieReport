@@ -3,7 +3,7 @@ In this section we will validate and prove that our implementation works as expe
 \subsection{Benchmark}
 When you choose your protocol, performance is an important factor. It should be said that you would probably not want to choose AMQP for its blistering speed, but rather for its broadcast or its queuing abilities or its delivery guarantees. In high performance request-response scenarios peer-to-peer is what you want, but that is not possible with AMQP. Every message is routed through an exchange server. This has a performance strength in the scenario where you broadcast your message once and it is routed to many (thousands) of clients.
 
-For benchmarking we have sought inspiration from the project Implementation of D-Bus support for Jolie\cite{D-Bus} as it has an excellent benchmarking suite for Jolie.
+For benchmarking we have sought inspiration from the project Implementation of D-Bus support for Jolie\cite{D-Bus} as it has an excellent benchmarking suite for Jolie, but we have written our own tests.
 \subsubsection{Test hardware}
 For the benchmarking we used a quad core machine with 8 logical threads running Ubuntu Desktop 13.10 64-bit. We used RabbitMQ as the AMQP message queue server. RabbitMQ was installed on the same machine but in a virtual PC (VMWare).\\
 The performance of AMQP should be slightly better with RabbitMQ running on a real server.\\
@@ -11,6 +11,7 @@ The performance in general should be quite a bit worse on a real network instead
 \begin{itemize}
 \item CPU: Intel i7 \#\# 2.3 GHz quad core
 \item RAM: 8 GB DDR3
+\item OS and swap disk: Samsung 840 Evo 1 TB
 \item OS: Ubuntu Desktop 13.10 64-bit
 \item Jolie version: 1.0 \#\#
 \item Java Runtime Environment version: \#\#
@@ -18,18 +19,16 @@ The performance in general should be quite a bit worse on a real network instead
 \item RabbitMQ version: 3.3.0 \#\#
 \item erlang version: R16B0 \#\#
 \item VMWare Player version: \#\#
-\item vCPUs: 2 \#\#
-\item Virtual RAM: 1 GB \#\#
+\item vCPUs: 2
+\item Virtual RAM: 1 GB
 \item Network: VMWare virtual network
 \end{itemize}
-\subsubsection{SOAP}
+\subsubsection{AMQP}
 
 \subsubsection{Socket}
 
-\subsubsection{HTTP}
-
 \subsubsection{Conclusion}
-AMQP performed quite a lot better than we expected. AMQP easily out performed SOAP (even though that is not so surprising), but was otherwise beaten in peer-to-peer transfers of all sizes. \#\#
+AMQP performed quite a lot better than we expected. AMQP was easily out performed by socket which was not so surprising, but was surprisingly close in performance to \#\#
 
 As expected AMQP had an huge advantage for broadcasting a message to many subscribers. \#\# was its strongest competitor because of its extremely low overhead and very direct communication. For small messages AMQP stood without competition at 1 message to \#\# subscribers and for large messages 1 to \#\# subscribers.
 \subsection{The JoRBA Project}
