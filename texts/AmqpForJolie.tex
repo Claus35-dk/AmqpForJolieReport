@@ -208,14 +208,19 @@ The SVDEP protocol is used for when we wish to only transfer a value, and no met
 We have basically just copied the SODEP implementation, changed the method writeMessage to only add the actual value to the stream, and removed the now unused methods.
 
 \subsection{Concurrency problems and solutions}
-When implementing both OneWay and RequestResponse, we experienced some periodic problems that ended up being concurrency problems. This section will explain some of them, and their solutions.
+When implementing both OneWay and RequestResponse, we experienced many periodic problems which turned out to be concurrency problems. This section will explain some of them, and their solutions.
 
 \noindent\textbf{OneWay receiving and creating the CommChannel object}\\
-At first, because we did not want to create several connections and channels to a single AMQP location we did not create a new object for each message we received from our subscription. Instead, we created one instance of the AmqpCommChannel object and saved that in our AmqpListener instance. This resulted in concurrency problems, as all the threads used the same instance, and race conditions occurred.
+At first, because we did not want to create several connections and channels to a single AMQP location we did not create a new object for each message we received from our subscription. Instead, we created one instance of the AmqpCommChannel object and saved that in our AmqpListener instance. This resulted in concurrency problems, as all the threads used the same instance, and race conditions sometimes occurred.
 
 We spent a lot of time thinking about how to fix this, and ended up creating a handler class for AMQP connections. This class acts like a singleton having one connection for each location. The connections are stored by their location, and when you need a connection you give it the location. If there is no such connection, the handler will create it, and open a channel.
 
-By using this new connection handler, the creation of AmqpCommChannel will be instant, and not be dependant on network. Whenever we need to do something with the server (publish, subscribe, RPC primitiveCall) we would use the handler to get the connection.
+By using this new connection handler, the creation of AmqpCommChannel will be instant, and not be dependent on network. Whenever we need to do something with the server (publish, subscribe, RPC primitiveCall) we would use the handler to get the connection.
 
-\#\# If there are no others, change intro to this section
+\noindent\textbf{Matching a response with the requester}\\
+When a request comes in the extension (simply put) passes the request on to Jolie. When the user written program has found an appropriate response, this is passed to Jolie and in turn to our extension. It was also difficult to identify which response matched which request, when the requests came tumbling in, but we did so by using the AMQP message property 'correlationId'.
+
+This problem was even better solved with the same solution mentioned above. With the implementation of the solution where there is a single connection per location we create an instance of AmqpCommChannel per request. When the user written program returns the respond, Jolie passes it to the specific CommChannel instance and thereby the problem is resolved in a better manner.
+
+We further improved the efficiency of the extension by moving the field for the RpcClient out of the AmqpCommChannel and thereby having just a single RpcClient instead of one per request. The RpcClient then relies on the correlationId to match the corresponding requester to a response.
 \newpage
