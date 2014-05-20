@@ -19,6 +19,7 @@
 \usepackage{parskip}
 \usepackage{listings} % For code blocks with syntax higlighting
 \usepackage{hyperref} % For automatic links between parts of document and cites.
+\usepackage{pdfpages}
 
 % Commands.
 \newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}} % Custom command used for tables.
@@ -48,6 +49,7 @@
 % Footer.
 \cfoot{\thepage\ of \pageref{LastPage}}
 % Frontpage.
+\includepdf{Frontpage.pdf}
 \maketitle
 \newpage
 \input{texts/Preface.tex}
