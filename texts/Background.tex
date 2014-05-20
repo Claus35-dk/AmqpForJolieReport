@@ -146,7 +146,7 @@ Message queues are being more and more used in event-based and message-oriented 
 
 AMQP's defining features include message orientation, queuing, routing, security and reliability.
 
-An important thing to know about AMQP is that AMQP is \textit{not} peer-to-peer. Communication between clients and servers goes through an AMQP message queue server which has two mechanisms: Queuing and routing. An AMQP server typically has many exchanges and queues.
+All AMQP opreations is asynchronous by design. You can post a message and expect it to be delivered without having to wait for an answer. This has the consequence that AMQP is not well suited for peer-to-peer communication. Another reason why it is not suitable for peer-to-peer communication is, that communication between clients and servers goes through an AMQP message queue server which has two mechanisms: Queuing and routing. An AMQP server typically has many exchanges and queues, and is not designed to route messages between two peers, but instead route message in complex patterns between servers and clients.
 \subsubsection{Queues and Exchanges explained}
 A \textit{Queue} may bind to one or more exchanges and from the exchange it receives messages to hold.\\
 A message handler is called a \textit{Consumer}. A consumer consumes messages by subscribing to a single queue. Multiple consumers may subscribe to the same queue. This is often used to balance work load.
