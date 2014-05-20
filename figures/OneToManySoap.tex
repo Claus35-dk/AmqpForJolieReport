@@ -1,0 +1,24 @@
+\noindent\begin{tikzpicture}[trim axis left]
+  \begin{axis}[
+    scale only axis,
+    grid=major,
+    scaled x ticks=false,
+    scaled y ticks=false,
+    ylabel=Time in seconds,
+    ymin=0,
+    ymax=300,
+    ytick={0,50,...,300},
+    xlabel=Subscribers,
+    xmin=1,
+    xmax=10,
+    xtick=data,
+    height=5cm,
+    width=\textwidth,
+    legend entries={Socket SOAP, AMQP SOAP},
+    legend style={at={(0.05,0.95)},anchor=north west},
+    axis lines=left
+  ]
+    \addplot+[smooth]table{onetomany_socket_soap.data};
+    \addplot+[smooth]table{onetomany_amqp_soap.data};
+  \end{axis}
+\end{tikzpicture}

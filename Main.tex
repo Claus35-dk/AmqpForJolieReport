@@ -21,6 +21,7 @@
 \usepackage{hyperref} % For automatic links between parts of document and cites.
 \usepackage{pdfpages}
 \usepackage{csquotes} % For blockquote.
+\usepackage{pgfplots, pgfplotstable, tikz} % For drawing plots.
 
 % Commands.
 \newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}} % Custom command used for tables.
@@ -41,6 +42,13 @@
 \author{Bachelor project by\\Michael Søby Andersen \& Claus Lindquist Henriksen\\msoa@itu.dk, clih@itu.dk\\IT University of Copenhagen\\\\Supervisor: Fabrizio Montesi}
 \pagestyle{fancy}
 
+% Data for tables for benchmarking
+\input{data/OneToMany.tex}
+\input{data/OneToOne.tex}
+
+% Setup pgfplots
+\pgfplotsset{compat=1.7}
+
 \begin{document}
 % Save section name in \markright. Used in header.
 \renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
@@ -50,7 +58,7 @@
 % Footer.
 \cfoot{\thepage\ of \pageref{LastPage}}
 % Frontpage.
-\includepdf{Frontpage.pdf}
+\includepdf{Frontpage_flat.pdf}
 \maketitle
 \newpage
 \input{texts/Preface.tex}

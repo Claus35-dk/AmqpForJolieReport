@@ -1,0 +1,24 @@
+\noindent\begin{tikzpicture}[trim axis left]
+  \begin{axis}[
+    scale only axis,
+    grid=major,
+    scaled x ticks=false,
+    scaled y ticks=false,
+    ylabel=Time in seconds,
+    ymin=0,
+    ymax=25,
+    ytick={0,5,...,25},
+    xlabel=Messages,
+    xmin=1000,
+    xmax=10000,
+    xtick=data,
+    height=5cm,
+    width=\textwidth,
+    legend entries={Socket SODEP, AMQP SODEP},
+    legend style={at={(0.05,0.95)},anchor=north west},
+    axis lines=left
+  ]
+    \addplot+[smooth]table{onetoone_socket_sodep.data};
+    \addplot+[smooth]table{onetoone_amqp_sodep.data};
+  \end{axis}
+\end{tikzpicture}
