@@ -7,7 +7,7 @@ As mention before Jolie is a service oriented programming language. Service orie
 
 Service-oriented architectures are easy to modularize and they are very scalable. The easy modularization and scalability of service-oriented architectures makes them ideal for distributed systems.
 \subsection{Jolie}
-Jolie\cite[Jolie-lang.org]{Jolie} is an interpreted language running on the Java Virtual Machine. Jolie makes it extremely easy to host a web service and invoke others.
+Jolie\cite[Jolie-lang.org]{Jolie} is an interpreted language running on the Java Virtual Machine. Jolie makes it extremely easy to host a web service and invoke others by automatically performing all the tedious tasks the programmer normally would perform to communicate using web services. It also separates deployment and code allowing for easy redistribution as mentioned earlier.
 
 Jolie supports a growing number of protocols and Jolie promise to keep behavior and deployment separated. What this means is that the code the programmer writes does not need to be changed when the programmer changes protocol. One simply choose another Jolie supported protocol and the program functions as always. This proved a challenge for us in extending the language while still keeping the promise of behavior and deployment separation, mainly because AMQP is not suitable for return procedure calls and because we wanted to add some AMQP specific details in regard to the communication ports.
 \subsubsection{A Jolie example}
