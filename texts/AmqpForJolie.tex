@@ -55,8 +55,8 @@ To setup Jolie to listen for requests from other services, it used the CommListe
 
 The abstract class CommListener specifies the following methods that must be overridden:
 \begin{itemize}
-  \item{run}
-  \item{shutdown}
+  \item public void run()
+  \item public void shutdown()
 \end{itemize}
 
 The CommListener class implements the Java Thread class (actually, it implements JolieThread which in turn implements Thread), and when Jolie starts the thread the run method is called. This method should use whatever blocking call the location has for accepting a connection, and handle it using another thread to be able to immediately be ready for another connection.
