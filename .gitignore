@@ -145,3 +145,6 @@ UpgradeLog*.XML
 *._aux
 *._log
 *.project.vim
+
+# Data temporaries
+*.data
