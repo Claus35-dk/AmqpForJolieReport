@@ -1,12 +1,15 @@
 \section{Background}
-In this chapter we will give some background knowledge about the technologies we will be working with: The service oriented programming language Jolie and the wire-level Advanced Message Queue Protocol.
+In this chapter we will give some background knowledge about the technologies we worked with: The service oriented programming language Jolie and the wire-level Advanced Message Queue Protocol.
 \subsection{Service-oriented architectures}
-As mention before Jolie is a service oriented programming language, but what does that mean exactly?\\
-Service oriented programs does not expose an interface of methods but an interface of service-calls. Each service invoke other services methods through standardized communication protocols. Service-oriented architectures are easy to modularize and they are very scalable. The easy modularization and scalability of service-oriented architectures makes them ideal for distributed systems.
+As mention before Jolie is a service oriented programming language. Service oriented programs does not expose an interface of functions or object-methods but an interface of service-operations. Each service invokes other service's operations through standardized communication protocols. W3C defines a web service as
+
+\blockquote{A software system designed to support interoperable machine-to-machine interaction over a network. It has an interface described in a machine-processable format (specifically WSDL). Other systems interact with the Web service in a manner prescribed by its description using SOAP messages, typically conveyed using HTTP with an XML serialization in conjunction with other Web-related standards.\cite[W3C, 2004]{W3COnWebServices}}
+
+Service-oriented architectures are easy to modularize and they are very scalable. The easy modularization and scalability of service-oriented architectures makes them ideal for distributed systems.
 \subsection{Jolie}
 Jolie\cite[Jolie-lang.org]{Jolie} is an interpreted language running on the Java Virtual Machine. Jolie makes it extremely easy to host a web service and invoke others.
 
-Jolie supports a growing number of protocols and Jolie promise to keep behavior and deployment separated. What this means is that the code one writes does not need to be changed when one changes the protocol. One simply choose another Jolie supported protocol and the program functions as always. This will prove a challenge for us in extending the language while still keeping the promise of behavior and deployment separation.
+Jolie supports a growing number of protocols and Jolie promise to keep behavior and deployment separated. What this means is that the code the programmer writes does not need to be changed when the programmer changes protocol. One simply choose another Jolie supported protocol and the program functions as always. This proved a challenge for us in extending the language while still keeping the promise of behavior and deployment separation, mainly because AMQP is not suitable for return procedure calls and because we wanted to add some AMQP specific details in regard to the communication ports.
 \subsubsection{A Jolie example}
 Jolie makes it extremely easy to set up a service or creating a program which invokes services. We will here give an example of a small Jolie program just to show the basic Jolie features. It should be noted that Jolie can do much more than what we show here.
 
@@ -139,27 +142,33 @@ main {
 
 In this example the locations are referring to an AMQP server. The latter program is actually broadcasting messages to an AMQP exchange server and the listener is subscribing to messages from a queue on the same server. The queue would need to be configured with a binding to the exchange in order to receive the broadcasts. More about that in the next section.
 \subsection{Advanced Message Queuing Protocol}
-Message queues are being more and more used in event-based and message-oriented software architectures. They are also ideal for handling large amounts of data because you can simply queue something for processing and handle the flow of data as quickly as you can. AMQP\cite{AMQP} is an open standard application layer protocol for message-oriented middleware.
+Message queues are being more and more used in event-based and message-oriented software architectures. They are ideal for handling large amounts of data because you can simply queue something for processing and handle the flow of data as quickly as you can. AMQP\cite{AMQP} is an open standard application layer protocol for message-oriented middleware.
 
 AMQP's defining features include message orientation, queuing, routing, security and reliability.
+
+An important thing to know about AMQP is that AMQP is \textit{not} peer-to-peer. Communication between clients and servers goes through an AMQP message queue server which has two mechanisms: Queuing and routing. An AMQP server typically has many exchanges and queues.
 \subsubsection{Queues and Exchanges explained}
-A \textit{Publisher} publishes messages to an \textit{Exchange}.\\
-An exchange is defined with an exchange type (routing algorithm). AMQP 0.9.1 describes support for four types\cite{Amqp091References}:
+A \textit{Queue} may bind to one or more exchanges and from the exchange it receives messages to hold.\\
+A message handler is called a \textit{Consumer}. A consumer consumes messages by subscribing to a single queue. Multiple consumers may subscribe to the same queue. This is often used to balance work load.
+
+A \textit{Publisher} publishes messages to an \textit{Exchange}. A message can have a \textit{routing key} to help the exchange route the message to the appropriate queue(s).\\
+An exchange is defined with an exchange type - a routing algorithm. AMQP 0.9.1 describes support for four types\cite{Amqp091References}:
 \begin{itemize}
 \item Direct
 \item Fanout
 \item Topic
 \item Headers/Match
 \end{itemize}
-A \textit{Queue} may bind to one or more exchanges and thereby receive messages to hold. A queue may bind with a routing key to only receive messages with matching routing criteria.\\
-A message handler is called a \textit{Consumer}. A consumer consumes messages by subscribing to a single queue.
+An exchange of the \textbf{Direct} type will route messages to binded queues which match the routing key criteria in a round-robin fashion.\\
+\textbf{Fanout} exchanges route message to \textit{all} binded queues no matter the routing key.\\
+\textbf{Topic} exchanges route messages to \textit{all} binded queues which match the routing key criteria.\\
+A \textbf{Headers/Match} exchange is for routing messages by multiple attributes. The exchange does not consider the routing key. It matches the headers of the message with the queues binded with the same arguments\cite{AmqpConcepts}.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{illustrations/publisher-exchange-queue-consumer.png}
   \caption{AMQP message path\cite{AmqpConcepts}}
 \end{figure}
-
-\subsubsection{RPC in AMQP}
-AMQP is not built for executing calls that are not asynchronous. Every call is by design asynchronous. Furthermore, AMQP does not define communication peer-to-peer, instead it has a server in the middle that handles communication. RPC-like functionality can be acheived with a little creativity. How this is done is explained in this section.
+\subsubsection{Return Procedure Call in AMQP}
+AMQP is not built for executing calls that are not asynchronous. Every call is by design asynchronous. Furthermore, AMQP does not define communication peer-to-peer, instead it has a server in the middle that handles communication. RPC-like (Return Procedure Call) functionality can be acheived with a little creativity. How this is done is explained in this section.
 
 Because AMQP is not peer-to-peer we do not specify the other end that handles the call, but the AMQP server's queue for the RPC server. Therefore, the RPC server must create a queue for receiving calls, if there it not one already.
 
