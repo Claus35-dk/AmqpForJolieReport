@@ -32,9 +32,9 @@ The performance in general should be quite a bit worse on a real network instead
 \subsubsection{Socket}
 
 \subsubsection{Conclusion}
-AMQP performed quite a lot better than we expected. AMQP was easily out performed by socket which was not so surprising, but was surprisingly close in performance to \#\#
+AMQP performs better than we expected. AMQP is always out performed by socket for peer-to-peer transmissions which was not surprising, but we found AMQP surprisingly fast considering how direct socket is and how little overhead it has.
 
-As expected AMQP had an huge advantage for broadcasting a message to many subscribers. \#\# was its strongest competitor because of its extremely low overhead and very direct communication. For small messages AMQP stood without competition at 1 message to \#\# subscribers and for large messages 1 to \#\# subscribers.
+As expected AMQP had an huge advantage for broadcasting a message to many listeners. AMQP out performs socket as soon as you have just two recipients no matter the size of the message.
 \subsection{The JoRBA Project}
 \label{subsec:The JoRBA Project}
 The JoRBA Project\cite{Jorba} (Jolie Rule-Based Adaptation framework) is a project about dynamic adaptation through the use of hooks and adaptation rules.
