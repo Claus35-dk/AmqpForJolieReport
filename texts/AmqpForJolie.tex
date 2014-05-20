@@ -1,38 +1,57 @@
 \section{AMQP for Jolie}
-In this chapter we will describe our implementation of the extension Advanced Message Queue Protocol for Jolie and we will argue for the design choices we have chosen. We use a RabbitMQ\cite{RabbitMQ} server as our message queue and exchange server.
-\subsubsection{Jolie integration}
-We are writing an extension to Jolie, and for it to be use full, it will have to work as an integration and work seamlessly with Jolie.\\
-Jolie has a number of interfaces for its extensions and protocols to implement. After implementation, the extension is then registered in a manifest-file.
+In this chapter we will describe our implementation of the extension Advanced Message Queue Protocol for Jolie and we will argue for the design choices we have made. We use a RabbitMQ\cite{RabbitMQ} server as our message queue and exchange server.
 
-The manifest files for CommChannel and CommListener extensions for Jolie needs to have the following two lines:
+\subsection{Jolie integration}
+We are writing an extension to Jolie, and for it to be useful, it will have to work as an integration and work seamlessly with Jolie.
+
+\subsubsection{Interfaces}
+Jolie has a number of interfaces for its extensions and protocols to implement. The interfaces we are going to implement are:
+\begin{itemize}
+\item CommChannel
+\item CommChannelFactory
+\item CommListener
+\item CommListenerFactory
+\end{itemize}
+
+\#\#\# Michael verify the following and maybe extend.
+
+CommChannels are used to handle CommMessages for both output ports and input ports.\\
+CommListeners are used to wait for requests on input ports. When a request is received Jolie will create a CommChannel to handle the request.\\
+The two factories are used by Jolie for creating CommChannels and CommListeners.
+
+\subsubsection{Registering the extension}
+After implementation, the extension is then registered in a manifest-file. The manifest files for CommChannel and CommListener extensions for Jolie needs to have the following two lines:
 \begin{lstlisting}
   X-JOLIE-ChannelExtension: amqp:jolie.net.AmqpCommChannelFactory
   X-JOLIE-ListenerExtension: amqp:jolie.net.AmqpListenerFactory
 \end{lstlisting}
+
 The first line defines that for output ports that has a location starting with `amqp://' Jolie should use the `jolie.net.AmqpCommChannelFactory' class.
 The second line defines that for input ports that has a location starting with `amqp://' Jolie should use the `jolie.net.AmqpListenerFactory' class.
 
-To be able to integrate AMQP with Jolie we need to understand how jolie sends a request, and how the response is handled.
+\subsubsection{The CommChannel}
+To be able to integrate AMQP with Jolie we need to understand how Jolie sends a request, and how the response is handled.
 
-When jolie tries to invoke a method on a service, it starts by creating an instance of the relevant CommChannel. To create this instance Jolie will use a factory that is a subtype of CommChannelFactory. In our case we would need to create two classes called AmqpCommChannel and AmqpCommChannelFactory. The CommChannelFactory class defines one method that must be overridden in subclasses; createChannel. This method is responsible for creating an instance of a subclass of the CommChannel class.
+When Jolie tries to invoke a method on a service, it starts by creating an instance of the relevant CommChannel. To create this instance Jolie will use a factory that is a subtype of CommChannelFactory. In our case we would need to create two classes called AmqpCommChannel and AmqpCommChannelFactory. The CommChannelFactory class defines one method that must be overridden in subclasses; createChannel. This method is responsible for creating an instance of a subclass of the CommChannel class.
 
 A CommChannel subclass is responsible for sending and receiving CommMessage objects. CommChannel defines the following methods that must be overridden:
 \begin{itemize}
-  \item{recvResponseFor}
-  \item{recvImpl}
-  \item{sendImpl}
-  \item{closeImpl}
+  \item public CommMessage recvResponseFor(CommMessage request)
+  \item protected CommMessage recvImpl()
+  \item protected void sendImpl(CommMessage message)
+  \item protected void closeImpl()
 \end{itemize}
 
 We are not interested in implementing the recvResponseFor method, we implement another subclass of the CommChannel, the StreamingCommChannel (this implements AbstractCommChannel, which in turn implements CommChannel).
 
-The sendImpl method is called whenever the jolie-code is trying to send a message to another service. It receives the CommMessage object to send. It is the CommChannels responsibility to make sure that the protocol selected from the jolie-code is used. The sendImpl should call the relevant protocols send method. This encodes the CommMessage object into an output stream. This output stream should then be sent to the service, and our subclass (AmqpCommChannel) should handle this for AMQP.
+The sendImpl method is called whenever the Jolie-code is trying to send a message to another service. It receives the CommMessage object to send. It is the CommChannels responsibility to make sure that the protocol selected from the Jolie-code is used. The sendImpl should call the relevant protocols send method. This encodes the CommMessage object into an output stream. This output stream should then be sent to the service, and our subclass (AmqpCommChannel) should handle this for AMQP.
 
 When something is sent with success the recvImpl method is called. It is important to note, that this method is called regardless of the type of service call. Even if the called method is of the OneWay type, recvImpl is still called, but with an empty return message. Again, it is the CommChannels responsibility to make sure that the protocol is used, and the recvImpl should call the relevant protocols recv method. This converts the input stream from the response into a CommMessage object.
 
-When the jolie-program terminates the connections must be closed. The closeImpl method is called in this case, and our subclass must handle closing the AMQP connections.
+When the Jolie program terminates the connections must be closed. The closeImpl method is called in this case, and our subclass must handle closing the AMQP connections.
 
-To setup Jolie to listen for requests from other services, it used the CommListener object. To support handling requests from a type of location, one needs to create a subclass of the CommListener. Like the CommChannel, a factory class is also used. The CommListenerFactory which needs to be derrived. In our case we would have to create the classes called AmqpCommListener and AmqpCommListenerFactory. When jolie starts a program that has an input port with an amqp location it invokes the createListener method of the factory for creating a listener.
+\subsubsection{The CommListener}
+To setup Jolie to listen for requests from other services, it used the CommListener object. To support handling requests from a type of location, one needs to create a subclass of the CommListener. Like the CommChannel, a factory class is also used. The CommListenerFactory which needs to be derrived. In our case we would have to create the classes called AmqpCommListener and AmqpCommListenerFactory. When Jolie starts a program that has an input port with an amqp location it invokes the createListener method of the factory for creating a listener.
 
 The abstract class CommListener specifies the following methods that must be overridden:
 \begin{itemize}
@@ -40,7 +59,7 @@ The abstract class CommListener specifies the following methods that must be ove
   \item{shutdown}
 \end{itemize}
 
-The CommListener class implements the Java Thread class (actually, it implements JolieThread which in turn implements Thread), and when jolie starts the thread the run method is called. This method should use whatever blocking call the location has for accepting a connection, and handle it using another thread to be able to immediately be ready for another connection.
+The CommListener class implements the Java Thread class (actually, it implements JolieThread which in turn implements Thread), and when Jolie starts the thread the run method is called. This method should use whatever blocking call the location has for accepting a connection, and handle it using another thread to be able to immediately be ready for another connection.
 
 The shutdown method is used when the listener is closed, and should handle closing connections.
 
@@ -123,7 +142,7 @@ The constructor for our initial implementation was responsible for establishing 
   // Create the channel.
   chan = conn.createChannel();
 \end{lstlisting}
-When publishing, subscribing or otherwise interacting with the server, the chan (com.rabbitmq.client.Channel) object is used.
+When publishing, subscribing or otherwise interacting with the server, the `chan' (com.rabbitmq.client.Channel) object is used.
 
 \noindent\textbf{sendImpl}\\
 When implementing the sendImpl method, we faced many difficulties. We took an incremental approach where we took small steps towards the final solution. To begin with, we implemented sending a simple hardcoded value to the RabbitMQ server. In the web-based administrative interface of the RabbitMQ server, we could see the messages on a specific queue, and could therefore verify that our message reached the queue we intended. Our first implementation ended up looking something like this:
@@ -139,8 +158,7 @@ When we got that working we tried to use the protocol defined. This meant adding
 \end{lstlisting}
 And sending the byte array from the output stream.
 
-To begin with we used the jolie protocol called SODEP (Simple Operation Data Exchange Protocol)\cite{SODEP}, but we did not like the messages it created. The use-case we wished to test using the AMQP implementation was for a service to send file events to an exchange. To support this we needed to send simple values instead of the SODEP object containing much more meta data. To support this we ended up copying the SODEP implementation to create the SVDEP (Simple Value Data Exchange Protocol) protocol.
-See \ref{subsec:SVDEP} on page \pageref{subsec:SVDEP} for the explaination of SVDEP protocol. To fully support the capabilities of AMQP, one would have to implement the AMQP type system in the SVDEP protocol (and possibly rename the procotol).
+In the early stages of our implementation we used the Jolie protocol SODEP (Simple Operation Data Exchange Protocol)\cite{SODEP}, but the messages it created held attributes only used for returning calls. Instead we created a protocol for sending simple values instead of the SODEP object which contains much more meta data. We simply copied the SODEP implementation and removed most of its features to create the SVDEP (Simple Value Data Exchange Protocol) protocol. This protocol can be used with for example AMQP to send values to clients that does not support SODEP. See \ref{subsec:SVDEP} on page \pageref{subsec:SVDEP} for the explanation of SVDEP protocol. The best solution would be to implement the AMQP type system in the SVDEP protocol (and rename the protocol), to fully support the capabilities of AMQP.
 
 \noindent\textbf{recvImpl}\\
 Because we are implementing the OneWay type, recvImpl is not interesting. We did however face some difficulties, as Jolie invokes the method regardless of whether or not there is a response to handle. To test our implementation we started by having Java print a line to the console, to indicate that the method has been called.
