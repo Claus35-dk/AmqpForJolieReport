@@ -5,11 +5,19 @@ The extension, however, does not yet include an AMQP compliant transport protoco
 
 The extension can still be used to broadcast events to an exchange and to invoke methods on other AMQP clients as long as the types are converted to a byte-array and as long as the types are supported by Jolie. Many transport protocols can be used, but we would recommend SODEP between Jolie-clients and otherwise SVDEP (see \ref{subsec:SVDEP} on page \pageref{subsec:SVDEP}).
 
-\#\# Something about benchmarking.
+We did performance benchmarks where we compared our AMQP communication extension with the Jolie communication extension Socket. Socket is very direct and Socket clearly outperforms AMQP in peer-to-peer transfers.\\
+AMQP is faster for broadcasting the same message to multiple recipients. AMQP is faster as soon as you have just two recipients. It is faster because the program sends just one message and the AMQP server routes the message to all subscribers. You might also want to choose AMQP for its queuing abilities or its routing abilities.
 
 We used several small dummy programs to test our extension throughout the process of implementing it. To fully validate our extension we looked to the JoRBA project \cite{Jorba}. JoRBA has a Jolie distributed system of many components as a proof of concept. This distributed system was the perfect test of our extension and especially its ability to handle the not so AMQP friendly request-response calls. The distributed system worked flawlessly (see \ref{subsec:The JoRBA Project} on page \pageref{subsec:The JoRBA Project}).
 
 Running these tests required nothing more than to change the location-fields in the code and thereby our extension complies with the Jolie promise of separation between behavior and deployment (see \ref{subsubsec:Jolie integration} on page \pageref{subsubsec:Jolie integration}).
 \subsection{Further work}
-As mentioned, this implementation is not complete. It does not meet the full specifications of neither AMQP version 1.0 or the popular 0.9.1. This implementation does not handle data types and simply sends and receives byte-arrays. As AMQP is a wire-level protocol data types should be handled in a transport protocol.
+As mentioned, this implementation is not complete. It does not meet the full specifications of neither AMQP version 1.0 or the popular 0.9.1. This implementation does not handle data types and simply sends and receives byte-arrays. As AMQP is a wire-level protocol data types should be handled in a transport protocol. AMQP 0.9.1 specifies the following data types\cite{Amqp09Types}
+\begin{itemize}
+\item Integers
+\item Bits, used to represent on/off values
+\item Short strings, used to hold short text properties
+\item Long strings, used to hold chunks of binary data
+\item Field tables, which hold name-value pairs. The field values are typed as strings, integers, etc.
+\end{itemize}
 \newpage
