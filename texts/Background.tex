@@ -53,16 +53,19 @@ outputPort FileCreatedOutput {
 \noindent\textbf{Declaring an interface}\\
 In an interface you declare the operations that are to expected of its implementers. In input ports interfaces are used to declare the methods other services can invoke on your service. In output ports interfaces are used to declare the methods Jolie can expect to find on the port.
 
-Jolie supports two kinds of operations: OneWay and RequestResponse. OneWay methods takes arguments but returns nothing. RequstResponse methods takes arguments and returns a response.
+Jolie supports two kinds of operations: OneWay and RequestResponse. OneWay methods takes arguments but returns nothing. RequstResponse methods takes arguments and returns a respond.
 
-Here is an example of an interface declaration:
+Following is an example of an interface declaration. The RequestResponse method `doubleValue' takes a double as argument and returns a double. The methods `send' and `receive' takes a string as argument and because it is OneWay it can not have a return value.
 
 \begin{lstlisting}
-interface AmqpInputInterface {
-  RequestResponse: receive(string)(bool)
+interface AmqpMathInterface {
+  RequestResponse: doubleVlaue(double)(double)
 }
 interface AmqpOutputInterface {
   OneWay: send(string)
+}
+interface AmqpInputInterface {
+  OneWay: receive(string)
 }
 \end{lstlisting}
 
