@@ -1,9 +1,7 @@
 \section{Abstract}
-Some text ending with a line break.\\
-Some more text ending with a newline.
-\newline
-More text with a cite \cite[p.~38]{DBLP:conf/tgc/MontesiS10}.
+This paper is about the implementation of the Advanced Message Queuing Protocol for the programming language Jolie. The protocol will be implemented as an extension for Jolie and therefore this paper may also be relevant for others who wish to write an extension for Jolie.
 
-Between this text, and previous text, is an empty line.\\
-Line break.
+This paper covers the implementation of the communication mechanism of AMQP to Jolie. It does not cover the wire-level AMQP transport protocol.
+
+After the implementation we validate it by testing it and benchmarking it against other similar communication extensions for Jolie. The final extension works very well and performs good. More simple extensions perform better for most tasks, but AMQP has a clear performance strength for sending a message to multiple recipients. Aside from that many will choose AMQP for its queuing and routing abilities.
 \newpage
