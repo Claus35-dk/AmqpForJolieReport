@@ -207,11 +207,6 @@ If we are handling an RPC call we first create a new instance of the RpcClient c
 
 After creating this instance, we use the primitiveCall method to make a call to another method on the other side. This just gets the bytes to send to the queue. The method primitiveCall is blocking and returns the response from the other end.
 
-The entire RPC client implementation ended up looking like this:
-\begin{lstlisting}
-  rpc.primitiveCall(ostream.toByteArray());
-\end{lstlisting}
-
 \noindent\textbf{recvImpl}\\
 When we are at the other end, and needs to send back a response, we use the replyTo property of the properties that follows the message. We simply publish our response to that queue.
 

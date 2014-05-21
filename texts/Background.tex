@@ -177,7 +177,7 @@ When a client wishes to perform an RPC call it will publish a message directly t
 
 When a client performs an RPC call it will create a queue to receive the response on. The message published to the RPC server will have the property called `replyTo' set to the name of the queue that the response should be published to.
 
-However, creating a new queue for every call is obviously not very efficient, so AMQP supports another property that can be set on the request. This property is called `correlationId'. It contains a unique ID that is used to match responses with requests. This way we can create a single response queue for each client.
+However, creating a new queue for every call is obviously not very efficient, so AMQP supports another property that can be set on the request. This property is called `correlationId'. It contains a unique ID that is used to match responses with requests. This way we can create a single response queue for each client.\cite{AMQPRPC}
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{illustrations/amqp-rpc.png}
