@@ -9,7 +9,7 @@ Service-oriented architectures are easy to modularize and they are very scalable
 \subsection{Jolie}
 Jolie\cite[Jolie-lang.org]{Jolie} is an interpreted language running on the Java Virtual Machine. Jolie makes it extremely easy to host a web service and invoke others by automatically performing all the tedious tasks the programmer normally would perform to communicate using web services. It also separates deployment and code allowing for easy redistribution as mentioned earlier.
 
-Jolie supports a growing number of protocols and Jolie promise to keep behavior and deployment separated. What this means is that the code the programmer writes does not need to be changed when the programmer changes protocol. One simply choose another Jolie supported protocol and the program functions as always. This proved a challenge for us in extending the language while still keeping the promise of behavior and deployment separation, mainly because AMQP is not suitable for return procedure calls and because we wanted to add some AMQP specific details in regard to the communication ports.
+Jolie supports a growing number of protocols and Jolie promise to keep behavior and deployment separated. What this means is that the code the programmer writes does not need to be changed when the programmer changes protocol. The programmer can simply choose another protocol supported by Jolie and the program functions as always. This proved a challenge for us in extending the language while still keeping the promise of behavior and deployment separation, mainly because AMQP is not suitable for return procedure calls and because we wanted to add some AMQP specific details in regard to the communication ports.
 \subsubsection{A Jolie example}
 Jolie makes it extremely easy to set up a service or creating a program which invokes services. We will here give an example of a small Jolie program just to show the basic Jolie features. It should be noted that Jolie can do much more than what we show here.
 
@@ -51,7 +51,7 @@ outputPort FileCreatedOutput {
 \end{lstlisting}
 
 \noindent\textbf{Declaring an interface}\\
-In an interface you declare the operations that are to expected of its implementers. In input ports interfaces are used to declare the methods other services can invoke on your service. In output ports interfaces are used to declare the methods Jolie can expect to find on the port.
+In an interface you declare the operations that its implementers have to expose. In input ports interfaces are used to declare the methods other services can invoke on your service. In output ports interfaces are used to declare the methods Jolie can expect to find on the port.
 
 Jolie supports two kinds of operations: OneWay and RequestResponse. OneWay methods takes arguments but returns nothing. RequstResponse methods takes arguments and returns a response.
 
@@ -80,7 +80,7 @@ include "console.iol"
 execution {concurrent}
 
 interface AmqpInputInterface {
-  RequestResponse: receive(string)(bool)
+  OneWay: receive(string)
 }
 
 inputPort FileEventListenerInput {
@@ -90,14 +90,12 @@ inputPort FileEventListenerInput {
 }
 
 main {
-  receive(message)(ack) {
+  receive(message)() {
     println@Console(message)();
-    ack = true
   }
 }
 \end{lstlisting}
-
-The method \textit{receive} will always return \textit{true} (ack = true).
+\textit{Note: Only when using SVDEP can we have methods that are not the same at both ends. This is because SVDEP does not transfer the method name. See \ref{subsec:SVDEP} on page \pageref{subsec:SVDEP} for the explanation of SVDEP protocol}}
 
 That was simple enough. Let us create a program that invokes the listener with FileEvents which we just send as the path to the files:
 
@@ -142,7 +140,7 @@ main {
 
 In this example the locations are referring to an AMQP server. The latter program is actually broadcasting messages to an AMQP exchange server and the listener is subscribing to messages from a queue on the same server. The queue would need to be configured with a binding to the exchange in order to receive the broadcasts. More about that in the next section.
 \subsection{Advanced Message Queuing Protocol}
-Message queues are being more and more used in event-based and message-oriented software architectures. They are ideal for handling large amounts of data because you can simply queue something for processing and handle the flow of data as quickly as you can. AMQP\cite{AMQP} is an open standard application layer protocol for message-oriented middleware.
+Message queues are being more and more used in event-based and message-oriented software architectures. They are ideal for handling large amounts of data because you can simply queue something for processing and handle the flow of data very quickly. AMQP\cite{AMQP} is an open standard application layer protocol for message-oriented middleware.
 
 AMQP's defining features include message orientation, queuing, routing, security and reliability.
 
