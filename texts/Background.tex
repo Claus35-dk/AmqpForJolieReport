@@ -38,13 +38,13 @@ Here is an example of output and input port declarations:
 
 \begin{lstlisting}
 inputPort FileEventListenerInput {
-  Location: "amqp://claus:admin@192.168.229.3:5672/fileevent?queue=fileeventListener"
+  Location: "amqp://username:password@serverip:port/vhost?queue=queue"
   Protocol: svdep
   Interfaces: AmqpInputInterface
 }
 
 outputPort FileCreatedOutput {
-  Location: "amqp://claus:admin@192.168.229.3:5672/fileevent?exchange=fileCreated"
+  Location: "amqp://username:password@serverip:port/vhost?exchange=exchange"
   Protocol: svdep
   Interfaces: AmqpOutputInterface
 }
@@ -87,7 +87,7 @@ interface AmqpInputInterface {
 }
 
 inputPort FileEventListenerInput {
-  Location: "amqp://username:password@serverip:port/fileevent?queue=fileeventListener"
+  Location: "amqp://username:password@serverip:port/vhost?queue=queue"
   Protocol: svdep
   Interfaces: AmqpInputInterface
 }
@@ -110,17 +110,17 @@ interface AmqpOutputInterface {
 }
 
 outputPort FileUpdatedOutput {
-  Location: "amqp://username:password@serverip:port/fileevent?exchange=fileUpdated"
+  Location: "amqp://username:password@serverip:port/vhost?exchange=exchange"
   Protocol: svdep
   Interfaces: AmqpOutputInterface
 }
 outputPort FileCreatedOutput {
-  Location: "amqp://username:password@serverip:port/fileevent?exchange=fileCreated"
+  Location: "amqp://username:password@serverip:port/vhost?exchange=exchange"
   Protocol: svdep
   Interfaces: AmqpOutputInterface
 }
 outputPort FileDeletedOutput {
-  Location: "amqp://username:password@serverip:port/fileevent?exchange=fileDeleted"
+  Location: "amqp://username:password@serverip:port/vhost?exchange=exchange"
   Protocol: svdep
   Interfaces: AmqpOutputInterface
 }

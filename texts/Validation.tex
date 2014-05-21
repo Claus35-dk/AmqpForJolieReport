@@ -1,7 +1,7 @@
 \section{Validation}
 In this section we will validate and prove that our implementation works as expected and we will look into the performance of the implementation compared to similar alternatives.
 \subsection{Benchmark}
-When you choose your protocol, performance is an important factor. It should be said that you would probably not want to choose AMQP for its blistering speed, but rather for its broadcast or its queuing abilities or its delivery guarantees. In high performance request-response scenarios peer-to-peer is what you want, but that is not possible with AMQP. Every message is routed through an exchange server. This has a performance strength in the scenario where you broadcast your message once and it is routed to many (thousands) of clients.
+When you choose your protocol, performance is an important factor. It should be said that you would probably not want to choose AMQP for its blistering speed, but rather for its broadcast or its queuing abilities or its delivery guarantees. In high performance request-response scenarios peer-to-peer is what you want, but that is not possible with AMQP. Every message is routed through an exchange server. This does however have a performance strength in the scenario where you broadcast your message once and it is routed to many (thousands) of clients.
 
 For benchmarking we have sought inspiration from the project \textit{Implementation of D-Bus support for Jolie}\cite{D-Bus} as it has an excellent benchmarking suite for Jolie which we have modified for our purpose, and written tests that are relevant for our extension.
 \subsubsection{Test hardware}
@@ -24,7 +24,7 @@ The performance in general should be quite a bit worse on a real network instead
 \item Network: VMWare virtual network
 \end{itemize}
 \subsubsection{RPC calls}
-To test RPC calls we have created a server that has one method. This methods gets an integer, and returns twice that. We have then created a client that sends a number requests to that server and exits when the last response has been received. We have measured the time from starting the client to when the client exits. We have used Java to run the Jolie programs through Jolie, to be able to use Java to time the operation. To see the difference from socket and AMQP we have varied the number of requests we sent before closing the client. The number of requests have been between 1,000 and 10,000 with increments of 1,000.
+To test RPC calls we have created a server that has one method. This methods takes an integer, and returns twice the value. We have then created a client that sends a number requests to that server and exits when the last response has been received. We have measured the time from starting the client to when the client exits. We have used Java to run the Jolie programs through Jolie, to be able to use Java to time the operation. To see the difference from socket and AMQP we have varied the number of requests we sent before closing the client. The number of requests have been between 1,000 and 10,000 with increments of 1,000.
 
 Our results are as follows:
 
@@ -42,7 +42,7 @@ And our results for using SODEP/SVDEP is:
 
 \input{figures/OneToManySodep.tex}
 
-As both graphs show AMQPs execution-time is not dependent on the number of subscribers, and this is one of AMQPs strengths. Another one of AMQP's strengths are that we do not have to wait for confirmation like we do for socket. We still have guarantee for delivery. We can see that AMQP is faster already when we have two subscribers.
+As both graphs show AMQPs execution-time is not dependent on the number of subscribers, and this is one of AMQPs strengths. Another one of AMQP's strengths are that we do not have to wait for confirmation like we do for socket. We still have guarantee for delivery. We can see that AMQP is faster with just two subscribers or more.
 \subsubsection{Conclusion}
 AMQP performs better than we expected. AMQP is always out performed by socket for peer-to-peer transmissions which was not surprising, but we found AMQP surprisingly fast considering how direct socket is and how little overhead it has.
 

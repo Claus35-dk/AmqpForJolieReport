@@ -18,7 +18,7 @@ CommListeners are used to wait for requests on input ports. When a request is re
 The two factories are used by Jolie for creating CommChannels and CommListeners.
 
 \subsubsection{Registering the extension}
-After implementation, the extension is then registered in a manifest-file. The manifest files for CommChannel and CommListener extensions for Jolie needs to have the following two lines:
+After implementation, the extension is then registered in a manifest-file. The manifest files for CommChannel and CommListener extensions for Jolie must have the following two lines:
 \begin{lstlisting}
   X-JOLIE-ChannelExtension: amqp:jolie.net.AmqpCommChannelFactory
   X-JOLIE-ListenerExtension: amqp:jolie.net.AmqpCommListenerFactory
@@ -49,7 +49,7 @@ When something is sent with success the \textbf{recvImpl} method is called. It i
 When the Jolie program terminates the connections must be closed. The \textbf{closeImpl} method is called in this case, and our subclass must handle closing the AMQP connections.
 
 \subsubsection{The CommListener}
-To setup Jolie to listen for requests from other services, it used the CommListener object. To support handling requests from a type of location, one needs to create a subclass of the CommListener. Like the CommChannel, a factory class is also used. The CommListenerFactory which needs to be derrived. In our case we would have to create the classes called AmqpCommListener and AmqpCommListenerFactory. When Jolie starts a program that has an input port with an amqp location it invokes the createListener method of the factory for creating a listener.
+To setup Jolie to listen for requests from other services, it used the CommListener object. To support handling requests from a type of location, one needs to create a subclass of the CommListener. Like the CommChannel, a factory class is also used. The CommListenerFactory which needs to be derrived. In our case we would have to create the classes called AmqpCommListener and AmqpCommListenerFactory. When Jolie starts a program that has an input port with an AMQP location it invokes the createListener method of the factory for creating a listener.
 
 The abstract class CommListener specifies the following methods that must be overridden:
 \begin{itemize}
@@ -57,9 +57,9 @@ The abstract class CommListener specifies the following methods that must be ove
   \item public void shutdown()
 \end{itemize}
 
-The CommListener class implements the Java Thread class (actually, it implements JolieThread which in turn implements Thread), and when Jolie starts the thread the run method is called. This method should use whatever blocking call the location has for accepting a connection, and handle it using another thread to be able to immediately be ready for another connection.
+The CommListener class implements the Java Thread class (actually, it implements JolieThread which in turn implements Thread), and when Jolie starts the thread the \textbf{run} method is called. This method should use whatever blocking call the location has for accepting a connection, and handle it using another thread to be able to immediately be ready for another connection.
 
-The shutdown method is used when the listener is closed, and should handle closing connections.
+The \textbf{shutdown} method is used when the listener is closed, and should handle closing connections.
 
 \subsection{Data formats}
 \label{subsec:Data formats}
@@ -108,7 +108,7 @@ We initially wanted to be able to specify all the parameters in the port definit
     RoutingKey: rtKey
   }
 \end{lstlisting}
-However, this required that we changed core Jolie code. We did not want to have to change Jolie to be able to implement our extension. Our extension should be able to be copied to peoples Jolie installations, and work out-of-the-box. This meant that we ended up implementing the transfer of all the parameters using the location url:
+However, this required that we changed core Jolie code. We did not want to have to change Jolie to be able to implement our extension. Our extension should be able to be copied to peoples Jolie installations, and work out-of-the-box. This meant that we ended up implementing the transfer of all the parameters using the location URL:
 
 \begin{lstlisting}
   outputPort SomeOutputPort {
@@ -143,12 +143,12 @@ The constructor for our initial implementation was responsible for establishing 
 When publishing, subscribing or otherwise interacting with the server, the `chan' (com.rabbitmq.client.Channel) object is used.
 
 \noindent\textbf{sendImpl}\\
-When implementing the sendImpl method, we faced many difficulties. We took an incremental approach where we took small steps towards the final solution. To begin with, we implemented sending a simple hardcoded value to the RabbitMQ server. In the web-based administrative interface of the RabbitMQ server, we could see the messages on a specific queue, and could therefore verify that our message reached the queue we intended. Our first implementation ended up looking something like this:
+When implementing the sendImpl method, we faced many difficulties. We took an incremental approach where we took small steps towards the final solution. To begin with, we implemented sending a simple hardcoded value to the RabbitMQ server. In the web-based administrative interface of the RabbitMQ server, we could see the messages on a specific queue, and could therefore verify that our message reached the queue we intended. Our first working implementation looked something like this:
 \begin{lstlisting}
   chan.basicPublish(exchName, routingKey, null, ``hey''.getBytes())
 \end{lstlisting}
 
-When we got that working we tried to use the protocol defined. This meant adding the following lines:
+When we got that working we tried to use the protocol defined in the Jolie program. This meant adding the following lines:
 \begin{lstlisting}
   // Make protocol give us the bytes to send.
   ByteArrayOutputStream ostream = new ByteArrayOutputStream();
