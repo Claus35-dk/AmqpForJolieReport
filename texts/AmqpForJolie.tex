@@ -209,8 +209,7 @@ After creating this instance, we use the primitiveCall method to make a call to 
 
 The entire RPC client implementation ended up looking like this:
 \begin{lstlisting}
-  RpcClient rpc = new RpcClient(chan, ``'', queueName);
-  dataToProcess = new AmqpMessage(null, rpc.primitiveCall(ostream.toByteArray(), null);
+  rpc.primitiveCall(ostream.toByteArray());
 \end{lstlisting}
 
 \noindent\textbf{recvImpl}\\
