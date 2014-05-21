@@ -21,11 +21,11 @@ The two factories are used by Jolie for creating CommChannels and CommListeners.
 After implementation, the extension is then registered in a manifest-file. The manifest files for CommChannel and CommListener extensions for Jolie needs to have the following two lines:
 \begin{lstlisting}
   X-JOLIE-ChannelExtension: amqp:jolie.net.AmqpCommChannelFactory
-  X-JOLIE-ListenerExtension: amqp:jolie.net.AmqpListenerFactory
+  X-JOLIE-ListenerExtension: amqp:jolie.net.AmqpCommListenerFactory
 \end{lstlisting}
 
 The first line defines that for output ports that has a location starting with `amqp://' Jolie should use the `jolie.net.AmqpCommChannelFactory' class.
-The second line defines that for input ports that has a location starting with `amqp://' Jolie should use the `jolie.net.AmqpListenerFactory' class.
+The second line defines that for input ports that has a location starting with `amqp://' Jolie should use the `jolie.net.AmqpCommListenerFactory' class.
 
 \subsubsection{The CommChannel}
 To be able to integrate AMQP with Jolie we need to understand how Jolie sends a request, and how the response is handled.
@@ -44,7 +44,7 @@ The method \textbf{recvResponseFor} is used for pairing responses with requests.
 
 The \textbf{sendImpl} method is called whenever the Jolie-code is trying to send a message to another service. It receives the CommMessage object to send. It is the CommChannels responsibility to make sure that the protocol selected from the Jolie-code is used. The sendImpl should call the relevant protocols send method. This encodes the CommMessage object into an output stream. This output stream should then be sent to the service, and our subclass (AmqpCommChannel) should handle this for AMQP. Usually, the resulting response is saved on the CommChannel instance for handling by recvImpl.
 
-When something is sent with success the \textbf{recvImpl} method is called. It is important to note, that this method is called regardless of the type of service call. Even if the called method is of the OneWay type, recvImpl is still called, but with an empty return message. Again, it is the CommChannels responsibility to make sure that the protocol is used, and the recvImpl should call the relevant protocols recv method. This converts the input stream from the response into a CommMessage object.
+When something is sent with success the \textbf{recvImpl} method is called. It is important to note, that this method is called regardless of the type of service call. Even if the called method is of the OneWay type, recvImpl is still called, but with no message set for processing in the instance. Again, it is the CommChannels responsibility to make sure that the protocol is used, and the recvImpl should call the relevant protocols recv method. This converts the input stream from the response into a CommMessage object.
 
 When the Jolie program terminates the connections must be closed. The \textbf{closeImpl} method is called in this case, and our subclass must handle closing the AMQP connections.
 
@@ -63,7 +63,7 @@ The shutdown method is used when the listener is closed, and should handle closi
 
 \subsection{Data formats}
 \label{subsec:Data formats}
-We looked at multiple "AMQP clients" for Java and frameworks building upon these clients. The Advanced Message Queue protocol is, as its name suggest, not simple so we thought it smartest to reuse existing software and then writing our own layer between the reused client and Jolie. The most promising, most used and most updated seemed to be the basic AMQP client build by RabbitMQ\cite{RabbitMqClient}. RabbitMQ's server and client is widely used by a number of large companies and is also sold as part of a VMWare software package\cite{vFabric}. The client is freely available from RabbitMQ's website.
+We looked at multiple `AMQP clients' for Java and frameworks building upon these clients. The Advanced Message Queue protocol is, as its name suggest, not simple so we thought it smartest to reuse existing software and then writing our own layer between the reused client and Jolie. The most promising, most used and most updated seemed to be the basic AMQP client build by RabbitMQ\cite{RabbitMqClient}. RabbitMQ's server and client is widely used by a number of large companies and is also sold as part of a VMWare software package\cite{vFabric}. The client is freely available from RabbitMQ's website.
 
 The RabbitMQ client handles a lot of the AMQP stuff such as establishing connections and channels. The client also provides methods for publishing and subscribing. The publish method takes the body of the message as a byte-array. We have chosen to use this publish-method to send messages. That means converting everything we send to byte-arrays and thereby we do not use the AMQP described data types.
 
@@ -205,7 +205,7 @@ First of all, handling RPC is different that regular OneWay, so we needed a way 
 
 If we are handling an RPC call we first create a new instance of the RpcClient class. It needs the AMQP Channel, the exchange to publish to, and the routing key. Because we want RPC calls to publish directly to queues, we set the exchange to be blank, and the routing key to be the name of the queue.
 
-After creating this instance, we use the primitiveCall method to make a call to another method on the other side. This just gets the bytes to send to the queue.
+After creating this instance, we use the primitiveCall method to make a call to another method on the other side. This just gets the bytes to send to the queue. The method primitiveCall is blocking and returns the response from the other end.
 
 The entire RPC client implementation ended up looking like this:
 \begin{lstlisting}
@@ -228,14 +228,14 @@ We have basically just copied the SODEP implementation, changed the method write
 When implementing both OneWay and RequestResponse, we experienced many periodic problems which turned out to be concurrency problems. This section will explain some of them, and their solutions.
 
 \noindent\textbf{OneWay receiving and creating the CommChannel object}\\
-At first, because we did not want to create several connections and channels to a single AMQP location we did not create a new object for each message we received from our subscription. Instead, we created one instance of the AmqpCommChannel object and saved that in our AmqpListener instance. This resulted in concurrency problems, as all the threads used the same instance, and race conditions sometimes occurred.
+At first, because we did not want to create several connections and channels to a single AMQP location we did not create a new instance of the AmqpCommChannel for each message we received from our subscription. Instead, we created one instance of the AmqpCommChannel class and saved that in our AmqpListener instance. This resulted in concurrency problems, as all the threads used the same instance, and race conditions sometimes occurred.
 
 We spent a lot of time thinking about how to fix this, and ended up creating a handler class for AMQP connections. This class acts like a singleton having one connection for each location. The connections are stored by their location, and when you need a connection you give it the location. If there is no such connection, the handler will create it, and open a channel.
 
 By using this new connection handler, the creation of AmqpCommChannel will be instant, and not be dependent on network. Whenever we need to do something with the server (publish, subscribe, RPC primitiveCall) we would use the handler to get the connection.
 
 \noindent\textbf{Matching a response with the requester}\\
-When a request comes in the extension (simply put) passes the request on to Jolie. When the user written program has found an appropriate response, this is passed to Jolie and in turn to our extension. It was also difficult to identify which response matched which request, when the requests came tumbling in, but we did so by using the AMQP message property 'correlationId'.
+When a request is received the extension (simply put) passes the request on to Jolie. When the user written program has found an appropriate response, this is passed to Jolie and in turn to our extension. It was also difficult to identify which response should be sent to which requester, when the requests came tumbling in, but we did so by using the AMQP message property 'correlationId'.
 
 This problem was even better solved with the same solution mentioned above. With the implementation of the solution where there is a single connection per location we create an instance of AmqpCommChannel per request. When the user written program returns the respond, Jolie passes it to the specific CommChannel instance and thereby the problem is resolved in a better manner.
 
