@@ -2,7 +2,7 @@
 In this chapter we will describe our implementation of the extension Advanced Message Queue Protocol for Jolie and we will argue for the design choices we have made. We use a RabbitMQ\cite{RabbitMQ} server as our message queue and exchange server.
 
 \subsection{Jolie integration}
-We are writing an extension to Jolie, and for it to be useful, it will have to work as an integration and work seamlessly with Jolie.
+We are writing an extension to Jolie, and for it to be useful, it will have to work as an integration and work seamlessly with Jolie. This also means that we are creating a stand-alone binary that will work without having to modify Jolie.
 
 \subsubsection{Interfaces}
 Jolie has a number of interfaces for its extensions and protocols to implement. The interfaces we are going to implement are:
@@ -13,10 +13,8 @@ Jolie has a number of interfaces for its extensions and protocols to implement. 
 \item CommListenerFactory
 \end{itemize}
 
-\#\#\# Michael verify the following and maybe extend.
-
 CommChannels are used to handle CommMessages for both output ports and input ports.\\
-CommListeners are used to wait for requests on input ports. When a request is received Jolie will create a CommChannel to handle the request.\\
+CommListeners are used to wait for requests on input ports. When a request is received we create an instance of our CommChannel and pass to Jolie for handling the request.\\
 The two factories are used by Jolie for creating CommChannels and CommListeners.
 
 \subsubsection{Registering the extension}
@@ -42,13 +40,13 @@ A CommChannel subclass is responsible for sending and receiving CommMessage obje
   \item protected void closeImpl()
 \end{itemize}
 
-We are not interested in implementing the recvResponseFor method, we implement another subclass of the CommChannel, the StreamingCommChannel (this implements AbstractCommChannel, which in turn implements CommChannel).
+The method \textbf{recvResponseFor} is used for pairing responses with requests. This method is already implemented in the class AbstractCommChannel, but we do not need it as we handle the responses ourself. We are therefore not interested in implementing the recvResponseFor method, we implement another subclass of the CommChannel, the StreamingCommChannel (this implements AbstractCommChannel, which in turn implements CommChannel). We chose to use StreamingCommChannel as this is suited for connections that is persistent. This is the case for AMQP.
 
-The sendImpl method is called whenever the Jolie-code is trying to send a message to another service. It receives the CommMessage object to send. It is the CommChannels responsibility to make sure that the protocol selected from the Jolie-code is used. The sendImpl should call the relevant protocols send method. This encodes the CommMessage object into an output stream. This output stream should then be sent to the service, and our subclass (AmqpCommChannel) should handle this for AMQP.
+The \textbf{sendImpl} method is called whenever the Jolie-code is trying to send a message to another service. It receives the CommMessage object to send. It is the CommChannels responsibility to make sure that the protocol selected from the Jolie-code is used. The sendImpl should call the relevant protocols send method. This encodes the CommMessage object into an output stream. This output stream should then be sent to the service, and our subclass (AmqpCommChannel) should handle this for AMQP. Usually, the resulting response is saved on the CommChannel instance for handling by recvImpl.
 
-When something is sent with success the recvImpl method is called. It is important to note, that this method is called regardless of the type of service call. Even if the called method is of the OneWay type, recvImpl is still called, but with an empty return message. Again, it is the CommChannels responsibility to make sure that the protocol is used, and the recvImpl should call the relevant protocols recv method. This converts the input stream from the response into a CommMessage object.
+When something is sent with success the \textbf{recvImpl} method is called. It is important to note, that this method is called regardless of the type of service call. Even if the called method is of the OneWay type, recvImpl is still called, but with an empty return message. Again, it is the CommChannels responsibility to make sure that the protocol is used, and the recvImpl should call the relevant protocols recv method. This converts the input stream from the response into a CommMessage object.
 
-When the Jolie program terminates the connections must be closed. The closeImpl method is called in this case, and our subclass must handle closing the AMQP connections.
+When the Jolie program terminates the connections must be closed. The \textbf{closeImpl} method is called in this case, and our subclass must handle closing the AMQP connections.
 
 \subsubsection{The CommListener}
 To setup Jolie to listen for requests from other services, it used the CommListener object. To support handling requests from a type of location, one needs to create a subclass of the CommListener. Like the CommChannel, a factory class is also used. The CommListenerFactory which needs to be derrived. In our case we would have to create the classes called AmqpCommListener and AmqpCommListenerFactory. When Jolie starts a program that has an input port with an amqp location it invokes the createListener method of the factory for creating a listener.
@@ -211,8 +209,7 @@ After creating this instance, we use the primitiveCall method to make a call to 
 
 The entire RPC client implementation ended up looking like this:
 \begin{lstlisting}
-  RpcClient rpc = new RpcClient(chan, ``'', queueName);
-  dataToProcess = new AmqpMessage(null, rpc.primitiveCall(ostream.toByteArray(), null);
+  rpc.primitiveCall(ostream.toByteArray());
 \end{lstlisting}
 
 \noindent\textbf{recvImpl}\\
@@ -222,6 +219,8 @@ When we are at the other end, and needs to send back a response, we use the repl
 \subsection{SVDEP protocol}
 \label{subsec:SVDEP} % For referencing this part elsewhere
 The SVDEP protocol is used for when we wish to only transfer a value, and no metadata for it. This protocol could be extended to convert from the AMQP type system to the Jolie type system and vice versa. For now, we use it to be able to publish simple messages to an exchange, and for getting simple values from a queue.
+
+SODEP uses a binary format which contains information such as the name of the method requested, and a unique id. When sending values over AMQP we are not interested in transferring this data. We only wish to transfer the actual value of the message.
 
 We have basically just copied the SODEP implementation, changed the method writeMessage to only add the actual value to the stream, and removed the now unused methods.
 
