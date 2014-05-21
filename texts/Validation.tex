@@ -23,18 +23,30 @@ The performance in general should be quite a bit worse on a real network instead
 \item Virtual RAM: 1 GB
 \item Network: VMWare virtual network
 \end{itemize}
-\subsubsection{AMQP}
+\subsubsection{RPC calls}
+To test RPC calls we have created a server that has one method. This methods gets an integer, and returns twice that. We have then created a client that sends a number requests to that server and exits when the last response has been received. We have measured the time from starting the client to when the client exits. We have used Java to run the Jolie programs through Jolie, to be able to use Java to time the operation. To see the difference from socket and AMQP we have varied the number of requests we sent before closing the client. The number of requests have been between 1,000 and 10,000 with increments of 1,000.
+
+Our results are as follows:
+
+\input{figures/OneToOne.tex}
+It is quite obvious here that AMQP is not suited for RPC-style calls as we have mentioned earlier. AMQP is between 50 \% and 75 \% slower than socket at RPC calls at the tested interval.
+
+\subsubsection{One publisher, multiple subscribers}
+To test a likely scenario where the architect would choose AMQP, we designed a test where we have a publisher that sends 1,000 messages to a number of subscribers. Having the AMQP server enables us to send the messages no more than once as AMQP handles routing to the subscribers, but for socket we have to duplicate the messages so that each subscriber gets one. We measure the time it takes for the publisher to publish all its 1,000 messages. We do not wait for subscribers to handle them. The method defined in the interface is a one-way method for SODEP and SVDEP, but SOAP failed when there was no response, so for SOAP we had to create a method that returns an empty response. To really see the difference we varied the number of subscribers from 1 to 10.
+
+Our results for using SOAP as the protocol is:
+
 \input{figures/OneToManySoap.tex}
+
+And our results for using SODEP/SVDEP is:
 
 \input{figures/OneToManySodep.tex}
 
-\input{figures/OneToOne.tex}
-\subsubsection{Socket}
-
+As both graphs show AMQPs execution-time is not dependent on the number of subscribers, and this is one of AMQPs strengths. Another one of AMQP's strengths are that we do not have to wait for confirmation like we do for socket. We still have guarantee for delivery. We can see that AMQP is faster already when we have two subscribers.
 \subsubsection{Conclusion}
 AMQP performs better than we expected. AMQP is always out performed by socket for peer-to-peer transmissions which was not surprising, but we found AMQP surprisingly fast considering how direct socket is and how little overhead it has.
 
-As expected AMQP had an huge advantage for broadcasting a message to many listeners. AMQP out performs socket as soon as you have just two recipients no matter the size of the message.
+As expected AMQP had an huge advantage for broadcasting a message to many subscribers. AMQP out performs socket as soon as you have just two recipients no matter the size of the message. The difference was the least between socket and AMQP when using SODEP because of the limited overhead for each message.
 \subsection{The JoRBA Project}
 \label{subsec:The JoRBA Project}
 The JoRBA Project\cite{Jorba} (Jolie Rule-Based Adaptation framework) is a project about dynamic adaptation through the use of hooks and adaptation rules.
